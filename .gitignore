@@ -1,0 +1,61 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ---- Virtual Environments ----
+venv/
+ENV/
+env/
+.venv/
+*.venv/
+
+# ---- Django / Project Files ----
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Collected static & media (generated in production)
+/static/
+/media/
+
+# Django check / coverage / test artifacts
+htmlcov/
+.coverage*
+.pytest_cache/
+coverage.xml
+
+# ---- Editor / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- OS / Misc ----
+.DS_Store
+Thumbs.db
+
+# ---- Environment / Secrets ----
+.env
+.env.*
+.env.local
+*.secret

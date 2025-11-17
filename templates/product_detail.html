@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<section class="section-content padding-y bg">
+<div class="container">
+
+<!-- ============================ COMPONENT 1 ================================= -->
+<div class="card">
+	<div class="row no-gutters">
+		<aside class="col-md-6">
+			<article class="gallery-wrap">
+				<div class="img-big-wrap">
+					<a href="{{ product.images.url }}" target="_blank" rel="noopener">
+						<img src="{{ product.images.url }}" class="img-fluid" alt="{{ product.product_name }}">
+					</a>
+				</div>
+			</article>
+		</aside>
+		<main class="col-md-6 border-left">
+			<article class="content-body">
+
+				<h2 class="title">{{ product.product_name }}</h2>
+
+				<div class="rating-wrap my-3">
+					<ul class="rating-stars">
+						<li style="width:80%" class="stars-active">
+							<i class="fa fa-star"></i> <i class="fa fa-star"></i>
+							<i class="fa fa-star"></i> <i class="fa fa-star"></i>
+							<i class="fa fa-star"></i>
+						</li>
+					</ul>
+					<small class="label-rating text-muted">132 reviews</small>
+				</div>
+
+				<div class="mb-3">
+					<var class="price h4">₹{{ product.price }}</var>
+				</div>
+
+				<p>{{ product.description }}</p>
+
+				<hr>
+				<div class="row">
+					<div class="item-option-select col-12">
+						<h6>Choose Color</h6>
+						<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+							<label class="btn btn-light">
+								<input type="radio" name="radio_color"> Rose
+							</label>
+							<label class="btn btn-light">
+								<input type="radio" name="radio_color"> White
+							</label>
+							<label class="btn btn-light active">
+								<input type="radio" name="radio_color" checked> Beige
+							</label>
+							<label class="btn btn-light">
+								<input type="radio" name="radio_color"> Charcoal
+							</label>
+						</div> 
+					</div>
+				</div>
+				<div class="row mt-3">
+					<div class="item-option-select col-12">
+						<h6>Select Size</h6>
+						<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+							<label class="btn btn-light">
+								<input type="radio" name="radio_size"> S
+							</label>
+							<label class="btn btn-light active">
+								<input type="radio" name="radio_size" checked> M
+							</label>
+							<label class="btn btn-light">
+								<input type="radio" name="radio_size"> L
+							</label>
+							<label class="btn btn-light">
+								<input type="radio" name="radio_size"> XL
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<hr>
+
+				<div class="d-flex flex-wrap align-items-center gap-2">
+					{% if product.stock > 0 %}
+						<a href="#" class="btn btn-dark mr-2">
+							<span class="text">Add to cart</span> <i class="fas fa-shopping-cart ml-1"></i>
+						</a>
+						<span class="badge badge-success">In Stock ({{ product.stock }})</span>
+					{% else %}
+						<span class="badge badge-danger mr-2">Out of Stock</span>
+					{% endif %}
+				</div>
+
+				<dl class="row mt-4">
+					<dt class="col-sm-4">Category</dt>
+					<dd class="col-sm-8">{{ product.category }}</dd>
+
+					<dt class="col-sm-4">SKU</dt>
+					<dd class="col-sm-8">{{ product.slug|upper }}</dd>
+				</dl>
+
+				<a href="{% url 'store' %}" class="btn btn-link px-0">← Back to Store</a>
+
+			</article>
+		</main>
+	</div> <!-- row.// -->
+</div> <!-- card.// -->
+<!-- ============================ COMPONENT 1 END .// ================================= -->
+
+<br>
+
+<div class="row">
+	<div class="col-md-9">
+		<header class="section-heading">
+			<h3>Customer Reviews </h3>  
+			<p class="text-muted small">Handpicked testimonials from candle lovers</p>
+		</header>
+
+		<article class="box mb-3">
+			<div class="icontext w-100">
+				<img src="{% static 'images/avatars/avatar1.jpg' %}" class="img-xs icon rounded-circle" alt="Reviewer">
+				<div class="text">
+					<span class="date text-muted float-md-right">24.04.2024 </span>  
+					<h6 class="mb-1">Mike John </h6>
+				</div>
+			</div>
+			<div class="mt-3">
+				<p>
+					“Beautiful scent and packaging. The throw fills my living room without being overpowering.”
+				</p>	
+			</div>
+		</article>
+
+		<article class="box mb-3">
+			<div class="icontext w-100">
+				<img src="{% static 'images/avatars/avatar2.jpg' %}" class="img-xs icon rounded-circle" alt="Reviewer">
+				<div class="text">
+					<span class="date text-muted float-md-right">11.03.2024 </span>  
+					<h6 class="mb-1">Harper Lee </h6>
+				</div>
+			</div>
+			<div class="mt-3">
+				<p>
+					“The candle burns evenly and lasts longer than most luxury brands I’ve tried. Definitely repurchasing.”
+				</p>	
+			</div>
+		</article>
+
+	</div> <!-- col.// -->
+</div> <!-- row.// -->
+
+
+</div> <!-- container .//  -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+{% endblock %}
