@@ -42,57 +42,72 @@
 				<p>{{ product.description }}</p>
 
 				<hr>
-				<div class="row">
-					<div class="item-option-select col-12">
-						<h6>Choose Color</h6>
-						<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-							<label class="btn btn-light">
-								<input type="radio" name="radio_color"> Rose
-							</label>
-							<label class="btn btn-light">
-								<input type="radio" name="radio_color"> White
-							</label>
-							<label class="btn btn-light active">
-								<input type="radio" name="radio_color" checked> Beige
-							</label>
-							<label class="btn btn-light">
-								<input type="radio" name="radio_color"> Charcoal
-							</label>
-						</div> 
-					</div>
-				</div>
-				<div class="row mt-3">
-					<div class="item-option-select col-12">
-						<h6>Select Size</h6>
-						<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-							<label class="btn btn-light">
-								<input type="radio" name="radio_size"> S
-							</label>
-							<label class="btn btn-light active">
-								<input type="radio" name="radio_size" checked> M
-							</label>
-							<label class="btn btn-light">
-								<input type="radio" name="radio_size"> L
-							</label>
-							<label class="btn btn-light">
-								<input type="radio" name="radio_size"> XL
-							</label>
-						</div>
-					</div>
-				</div>
-
 				<hr>
 
-				<div class="d-flex flex-wrap align-items-center gap-2">
-					{% if product.stock > 0 %}
-						<a href="#" class="btn btn-dark mr-2">
-							<span class="text">Add to cart</span> <i class="fas fa-shopping-cart ml-1"></i>
-						</a>
-						<span class="badge badge-success">In Stock ({{ product.stock }})</span>
-					{% else %}
+				{% if product.stock > 0 %}
+					<div class="product-actions border rounded p-3">
+						{% if has_variations %}
+							<form action="{% url 'add_cart' product.id %}" method="POST" class="w-100">
+								{% csrf_token %}
+								{% if colors %}
+								<div class="mb-3">
+									<h6>Choose Color</h6>
+									<div class="btn-group btn-group-sm btn-group-toggle d-flex flex-wrap" data-toggle="buttons">
+										{% for color in colors %}
+										<label class="btn btn-outline-dark m-1 {% if forloop.first %}active{% endif %}" style="padding:0.35rem 0.75rem; min-width:60px;">
+											<input type="radio" name="color" value="{{ color.variation_value }}" autocomplete="off" {% if forloop.first %}checked{% endif %}> {{ color.variation_value|title }}
+										</label>
+										{% endfor %}
+									</div>
+								</div>
+								{% endif %}
+								{% if sizes %}
+								<div class="mb-3">
+									<h6>Select Size</h6>
+									<div class="btn-group btn-group-sm btn-group-toggle d-flex flex-wrap" data-toggle="buttons">
+										{% for size in sizes %}
+										<label class="btn btn-outline-dark m-1 {% if forloop.first %}active{% endif %}" style="padding:0.35rem 0.75rem; min-width:60px;">
+											<input type="radio" name="size" value="{{ size.variation_value }}" autocomplete="off" {% if forloop.first %}checked{% endif %}> {{ size.variation_value|upper }}
+										</label>
+										{% endfor %}
+									</div>
+								</div>
+								{% endif %}
+								<div class="d-flex flex-wrap align-items-center gap-2" style="gap:12px;">
+									<button type="submit" class="btn btn-dark px-4">
+										<span class="text">Add to cart</span> <i class="fas fa-shopping-cart ml-1"></i>
+									</button>
+									{% if in_cart %}
+									<a href="{% url 'cart' %}" class="btn btn-dark px-4">
+										<span class="text">View in cart</span> <i class="fas fa-shopping-cart ml-1"></i>
+									</a>
+									{% endif %}
+									<span class="badge badge-success ml-2">In Stock ({{ product.stock }})</span>
+								</div>
+							</form>
+						{% else %}
+							<div class="d-flex flex-wrap align-items-center gap-2" style="gap:12px;">
+								{% if in_cart %}
+									<a href="{% url 'cart' %}" class="btn btn-dark px-4">
+										<span class="text">View in cart</span> <i class="fas fa-shopping-cart ml-1"></i>
+									</a>
+								{% else %}
+									<form action="{% url 'add_cart' product.id %}" method="POST" class="d-inline">
+										{% csrf_token %}
+										<button type="submit" class="btn btn-dark px-4">
+											<span class="text">Add to cart</span> <i class="fas fa-shopping-cart ml-1"></i>
+										</button>
+									</form>
+								{% endif %}
+								<span class="badge badge-success ml-2">In Stock ({{ product.stock }})</span>
+							</div>
+						{% endif %}
+					</div>
+				{% else %}
+					<div class="d-flex flex-wrap align-items-center gap-2">
 						<span class="badge badge-danger mr-2">Out of Stock</span>
-					{% endif %}
-				</div>
+					</div>
+				{% endif %}
 
 				<dl class="row mt-4">
 					<dt class="col-sm-4">Category</dt>

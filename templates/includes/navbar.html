@@ -23,9 +23,9 @@
 					</div>
 				</div>
 				<div class="col-lg-4">
-					<form action="#" class="search w-100">
+					<form action="{% url 'search' %}" method="GET" class="search w-100">
 						<div class="input-group">
-							<input type="text" class="form-control" placeholder="Search products">
+							<input type="text" name="keyword" class="form-control" placeholder="Search products" value="{{ request.GET.keyword|default:'' }}">
 							<div class="input-group-append">
 								<button class="btn btn-primary" type="submit">
 									<i class="fa fa-search"></i>
@@ -44,9 +44,9 @@
 								<a href="./register.html"> Register</a>
 							</div>
 						</div>
-						<a href="./cart.html" class="widget-header pl-3">
+						<a href="{% url 'cart' %}" class="widget-header pl-3">
 							<div class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></div>
-							<span class="badge badge-pill badge-danger notify">0</span>
+							<span class="badge badge-pill badge-danger notify">{{ cart_count }}</span>
 						</a>
 					</div>
 				</div>
@@ -60,9 +60,9 @@
 					</a>
 					<div class="d-flex align-items-center">
 						<a href="{% url 'store' %}" class="btn btn-outline-primary btn-sm mr-2">Store</a>
-						<a href="./cart.html" class="btn btn-outline-secondary btn-sm mr-2 position-relative">
+						<a href="{% url 'cart' %}" class="btn btn-outline-secondary btn-sm mr-2 position-relative">
 							<i class="fa fa-shopping-cart"></i>
-							<span class="badge badge-pill badge-danger notify position-absolute" style="top:-8px; right:-8px;">0</span>
+							<span class="badge badge-pill badge-danger notify position-absolute" style="top:-8px; right:-8px;">{{ cart_count }}</span>
 						</a>
 						<button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#mobileHeaderExtras" aria-expanded="false" aria-controls="mobileHeaderExtras">
 							<i class="fa fa-bars"></i>
@@ -70,9 +70,9 @@
 					</div>
 				</div>
 				<div class="mt-3">
-					<form action="#" class="search">
+					<form action="{% url 'search' %}" method="GET" class="search">
 						<div class="input-group">
-							<input type="text" class="form-control" placeholder="Search products">
+							<input type="text" name="keyword" class="form-control" placeholder="Search products" value="{{ request.GET.keyword|default:'' }}">
 							<div class="input-group-append">
 								<button class="btn btn-primary" type="submit">
 									<i class="fa fa-search"></i>

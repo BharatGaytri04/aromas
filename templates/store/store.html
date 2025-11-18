@@ -129,7 +129,11 @@
     
     <header class="border-bottom mb-4 pb-3">
             <div class="form-inline">
-                <span class="mr-md-auto">{{ products|length }} Item{{ products|length|pluralize }} found </span>
+                {% if keyword %}
+                    <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} found for "<strong>{{ keyword }}</strong>" </span>
+                {% else %}
+                    <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} found </span>
+                {% endif %}
                 
             </div>
     </header><!-- sect-heading -->
@@ -154,7 +158,11 @@
                     </div> <!-- price-wrap.// -->
                     </div>
                     {% if product.stock > 0 %}
-                        <a href="#" class="btn btn-block btn-dark">Add to cart</a>
+                        {% if product.id in products_in_cart %}
+                            <a href="{% url 'cart' %}" class="btn btn-block btn-primary">View in cart</a>
+                        {% else %}
+                            <a href="{% url 'add_cart' product.id %}" class="btn btn-block btn-dark">Add to cart</a>
+                        {% endif %}
                     {% else %}
                         <span class="btn btn-block btn-outline-secondary disabled">Out of stock</span>
                     {% endif %}
@@ -165,15 +173,61 @@
     </div> <!-- row end.// -->
     
     
-    <nav class="mt-4" aria-label="Page navigation sample">
+    {% if products.has_other_pages %}
+    <nav class="mt-4" aria-label="Page navigation">
       <ul class="pagination">
-        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        {% if products.has_previous %}
+          <li class="page-item">
+            {% if keyword %}
+              <a class="page-link" href="{% url 'search' %}?keyword={{ keyword|urlencode }}&page={{ products.previous_page_number }}">Previous</a>
+            {% elif selected_category %}
+              <a class="page-link" href="{% url 'products_by_category' selected_category.slug %}?page={{ products.previous_page_number }}">Previous</a>
+            {% else %}
+              <a class="page-link" href="{% url 'store' %}?page={{ products.previous_page_number }}">Previous</a>
+            {% endif %}
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1">Previous</a>
+          </li>
+        {% endif %}
+
+        {% for page_num in products.paginator.page_range %}
+          {% if products.number == page_num %}
+            <li class="page-item active">
+              <a class="page-link" href="#">{{ page_num }} <span class="sr-only">(current)</span></a>
+            </li>
+          {% else %}
+            <li class="page-item">
+              {% if keyword %}
+                <a class="page-link" href="{% url 'search' %}?keyword={{ keyword|urlencode }}&page={{ page_num }}">{{ page_num }}</a>
+              {% elif selected_category %}
+                <a class="page-link" href="{% url 'products_by_category' selected_category.slug %}?page={{ page_num }}">{{ page_num }}</a>
+              {% else %}
+                <a class="page-link" href="{% url 'store' %}?page={{ page_num }}">{{ page_num }}</a>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+          <li class="page-item">
+            {% if keyword %}
+              <a class="page-link" href="{% url 'search' %}?keyword={{ keyword|urlencode }}&page={{ products.next_page_number }}">Next</a>
+            {% elif selected_category %}
+              <a class="page-link" href="{% url 'products_by_category' selected_category.slug %}?page={{ products.next_page_number }}">Next</a>
+            {% else %}
+              <a class="page-link" href="{% url 'store' %}?page={{ products.next_page_number }}">Next</a>
+            {% endif %}
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1">Next</a>
+          </li>
+        {% endif %}
       </ul>
     </nav>
+    {% endif %}
     
         </main> <!-- col.// -->
     
