@@ -7,4 +7,5 @@ urlpatterns = [
     path('category/<slug:category_slug>/', views.store, name='products_by_category'),
     path('search/', views.search, name='search'),
     path('product/<slug:product_slug>/', views.product_detail, name='product_detail'),
+    path('check-pincode/', views.check_pincode, name='check_pincode'),
 ]

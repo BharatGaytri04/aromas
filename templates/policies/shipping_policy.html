@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="section-content padding-y">
+  <div class="container">
+    <h2 class="mb-3">Shipping Policy</h2>
+    <p class="text-muted">Last Updated: {{ last_updated }}</p>
+
+    <h4>Processing &amp; Delivery</h4>
+    <ul>
+      <li>Orders ship within 1–2 business days.</li>
+      <li>Delivery timeline: 3–7 working days based on location.</li>
+    </ul>
+
+    <h4>Shipping Charges</h4>
+    <p>Flat ₹79 per order, free shipping above ₹999.</p>
+
+    <h4>Tracking</h4>
+    <p>Once dispatched you will receive a tracking ID, courier name, and link via email/SMS.</p>
+
+    <h4>Incorrect Address</h4>
+    <p>Failed deliveries caused by incorrect addresses may require the customer to pay reshipment fees.</p>
+
+    <h4>Damaged or Missing Items</h4>
+    <p>Provide an unboxing video to claim refunds or replacements.</p>
+  </div>
+</section>
+{% endblock %}
+

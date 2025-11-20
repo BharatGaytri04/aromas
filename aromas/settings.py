@@ -11,24 +11,37 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
+
+def env_bool(name, default=False):
+    return os.environ.get(name, str(default)).strip().lower() in ('true', '1', 'yes')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-sn3og0v90!!9n%$z$%2s-mow0ea)$0g^92o(#6wk3i^qjj#^4+'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-placeholder-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool('DEBUG', True)
 
 # ALLOWED_HOSTS configuration
 # For development: use ['*'] or ['localhost', '127.0.0.1']
 # For production: use ['treandy.in', 'www.treandy.in']
-ALLOWED_HOSTS = ['*']  # Change to ['treandy.in', 'www.treandy.in'] in production!
+allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '*')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()] or ['*']
+ADMIN_URL = os.environ.get('ADMIN_URL', 'secure-admin/')
+if ADMIN_URL.startswith('/'):
+    ADMIN_URL = ADMIN_URL.lstrip('/')
+if not ADMIN_URL.endswith('/'):
+    ADMIN_URL = f"{ADMIN_URL}/"
 
 
 # Application definition
@@ -40,10 +53,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'category',
     'accounts',
     'store',
     'cart',
+    'orders',
+    'wishlist',
+    'reviews',
+    'coupons',
+    'notifications',
+    'loyalty',
+    'seller',
 ]
 
 MIDDLEWARE = [
@@ -84,12 +105,27 @@ AUTH_USER_MODEL = 'accounts.Account'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database configuration
+# Use PostgreSQL if DB_NAME is set, otherwise use SQLite for development
+DB_NAME = os.environ.get('DB_NAME', '')
+if DB_NAME:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -138,7 +174,92 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Email configuration
+# IMPORTANT: To send actual emails, you need a Gmail App Password (not your regular password)
+# 
+# ⚠️ HOW TO GET GMAIL APP PASSWORD:
+# 1. Go to https://myaccount.google.com/
+# 2. Click on "Security" in the left sidebar
+# 3. Enable "2-Step Verification" if not already enabled (this is REQUIRED)
+# 4. After enabling 2-Step Verification, go back to Security page
+# 5. Scroll down and click on "App passwords" (you'll see this only after enabling 2-Step Verification)
+# 6. Select "Mail" as the app and "Other" as the device
+# 7. Enter a name like "Aromas Django App"
+# 8. Click "Generate"
+# 9. Copy the 16-character password (it will look like: abcd efgh ijkl mnop)
+# 10. Paste it below WITHOUT SPACES (e.g., abcdefghijklmnop)
+#
+# For testing without password: Use 'django.core.mail.backends.console.EmailBackend'
+# For production with password: Use 'django.core.mail.backends.smtp.EmailBackend'
+
+# Email configuration
+# IMPORTANT: The password below is NOT a valid Gmail App Password.
+# Gmail App Passwords are 16 characters WITHOUT special characters like @
+# Example: abcdefghijklmnop (16 characters, no spaces, no special chars)
+#
+# TO GET A VALID GMAIL APP PASSWORD:
+# 1. Go to https://myaccount.google.com/
+# 2. Click "Security" in the left sidebar
+# 3. Enable "2-Step Verification" if not already enabled (REQUIRED)
+# 4. Go back to Security page
+# 5. Scroll down and click "App passwords"
+# 6. Select "Mail" as the app
+# 7. Select "Other (Custom name)" as device
+# 8. Enter name: "Aromas Django App"
+# 9. Click "Generate"
+# 10. Copy the 16-character password (e.g., abcd efgh ijkl mnop)
+# 11. Paste it below WITHOUT SPACES (e.g., abcdefghijklmnop)
+#
+# For now, using console backend - emails print to terminal/console
+# After you get App Password, change EMAIL_BACKEND to smtp.EmailBackend
+
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@example.com')
+
+# CSRF and Session Cookie Settings
+# These settings help prevent CSRF verification failures
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens
+
+# CSRF Trusted Origins - required for Django 4.0+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost',
+    'http://127.0.0.1',
+]
+
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ============================================================
+# Razorpay Payment Gateway Configuration
+# ============================================================
+# To enable Razorpay:
+# 1. Install razorpay: pip install razorpay
+# 2. Get your Razorpay keys from: https://dashboard.razorpay.com/app/keys
+# 3. Add your keys below
+# 4. Set RAZORPAY_ENABLED = True
+# 5. Uncomment the Razorpay payment option in checkout.html
+
+# Razorpay Settings (Currently Disabled)
+RAZORPAY_ENABLED = env_bool('RAZORPAY_ENABLED', False)
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+RAZORPAY_CURRENCY = os.environ.get('RAZORPAY_CURRENCY', 'INR')  # Currency code
+
+# When RAZORPAY_ENABLED = True, customers can pay online via Razorpay
+# When RAZORPAY_ENABLED = False, only Cash on Delivery (COD) is available

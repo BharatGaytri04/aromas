@@ -6,6 +6,17 @@ gunicorn==21.2.0
 whitenoise==6.6.0
 psycopg2-binary==2.9.9  # PostgreSQL adapter (optional, for production database)
 
+# PDF Generation
+xhtml2pdf==0.2.17
+reportlab==4.4.5
+
+# Payment Gateway (Optional - install when enabling Razorpay)
+# razorpay==1.4.2  # Uncomment when you add Razorpay keys
+
+
+# Environment configuration
+python-dotenv==1.0.1
+
 # Development tools
 flake8==7.0.0
 black==24.4.2

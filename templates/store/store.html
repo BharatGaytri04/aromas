@@ -50,74 +50,85 @@
         </article> <!-- filter-group  .// -->
         <article class="filter-group">
             <header class="card-header">
-                <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true" class="">
+                <a href="#" data-toggle="collapse" data-target="#collapse_filters" aria-expanded="true" class="">
                     <i class="icon-control fa fa-chevron-down"></i>
-                    <h6 class="title">Sizes </h6>
+                    <h6 class="title">Filter Products</h6>
                 </a>
             </header>
-            <div class="filter-content collapse show" id="collapse_4">
+            <div class="filter-content collapse show" id="collapse_filters">
                 <div class="card-body">
-                  <label class="checkbox-btn">
-                    <input type="checkbox">
-                    <span class="btn btn-light"> XS </span>
-                  </label>
-    
-                  <label class="checkbox-btn">
-                    <input type="checkbox">
-                    <span class="btn btn-light"> SM </span>
-                  </label>
-    
-                  <label class="checkbox-btn">
-                    <input type="checkbox">
-                    <span class="btn btn-light"> LG </span>
-                  </label>
-    
-                  <label class="checkbox-btn">
-                    <input type="checkbox">
-                    <span class="btn btn-light"> XXL </span>
-                  </label>
-            </div><!-- card-body.// -->
-            </div>
-        </article> <!-- filter-group .// -->
-        
-        <article class="filter-group">
-            <header class="card-header">
-                <a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true" class="">
-                    <i class="icon-control fa fa-chevron-down"></i>
-                    <h6 class="title">Price range </h6>
-                </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_3">
-                <div class="card-body">
-                    
-                    <div class="form-row">
-                    <div class="form-group col-md-6">
-                      <label>Min</label>
-                      <!-- <input class="form-control" placeholder="$0" type="number"> -->
-                          <select class="mr-2 form-control">
-                            <option value="0">₹0</option>
-                            <option value="50">₹50</option>
-                            <option value="100">₹100</option>
-                            <option value="150">₹150</option>
-                            <option value="200">₹200</option>
-                            <option value="500">₹500</option>
-                            <option value="1000">₹1000</option>
-                        </select>
-                    </div>
-                    <div class="form-group text-right col-md-6">
-                      <label>Max</label>
-                          <select class="mr-2 form-control">
-                            <option value="50">₹50</option>
-                            <option value="100">₹100</option>
-                            <option value="150">₹150</option>
-                            <option value="200">₹200</option>
-                            <option value="500">₹500</option>
-                            <option value="1000">₹1000</option>
-                            <option value="2000">₹2000+</option>
-                        </select>
-                    </div>
-                    </div> <!-- form-row.// -->
-                    <button class="btn btn-block btn-primary">Apply</button>
+                    <form method="get" class="filter-form">
+                        {% if keyword %}
+                            <input type="hidden" name="keyword" value="{{ keyword }}">
+                        {% endif %}
+                        <input type="hidden" name="sort" value="{{ current_filters.sort }}">
+
+                        <div class="price-slider-wrapper mb-3"
+                             data-min="{{ price_bounds.slider_min }}"
+                             data-max="{{ price_bounds.slider_max }}"
+                             data-step="50">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div class="price-display">
+                                    <small class="text-muted">Min</small>
+                                    <div class="price-chip">₹<span class="min-value">{{ current_filters.min_price|default:price_bounds.slider_min }}</span></div>
+                                </div>
+                                <div class="price-display text-right">
+                                    <small class="text-muted">Max</small>
+                                    <div class="price-chip">₹<span class="max-value">{{ current_filters.max_price|default:price_bounds.max }}</span></div>
+                                </div>
+                            </div>
+                            <div class="range-slider">
+                                <input type="range" class="range-min" value="{{ current_filters.min_price|default:price_bounds.slider_min }}" min="{{ price_bounds.slider_min }}" max="{{ price_bounds.slider_max }}" step="50">
+                                <input type="range" class="range-max" value="{{ current_filters.max_price|default:price_bounds.slider_max }}" min="{{ price_bounds.slider_min }}" max="{{ price_bounds.slider_max }}" step="50">
+                                <div class="slider-track"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="sr-only">Min Price</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₹</span>
+                                    </div>
+                                    <input type="number" min="{{ price_bounds.slider_min }}" step="50" name="min_price" class="form-control price-input-min" placeholder="{{ price_bounds.slider_min }}" value="{{ current_filters.min_price }}">
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="sr-only">Max Price</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">₹</span>
+                                    </div>
+                                    <input type="number" min="{{ price_bounds.slider_min }}" step="50" name="max_price" class="form-control price-input-max" placeholder="{{ price_bounds.slider_max }}" value="{{ current_filters.max_price|default:price_bounds.slider_max }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="in_stock" id="filterInStock" {% if current_filters.in_stock %}checked{% endif %}>
+                            <label class="form-check-label" for="filterInStock">
+                                <i class="fas fa-box me-1"></i>In stock only
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="sale_only" id="filterSaleOnly" {% if current_filters.sale_only %}checked{% endif %}>
+                            <label class="form-check-label" for="filterSaleOnly">
+                                <i class="fas fa-tags me-1"></i>On sale
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-block btn-primary mb-2">
+                            <i class="fas fa-filter me-1"></i>Apply Filters
+                        </button>
+                        {% if keyword %}
+                            <a href="{% url 'search' %}?keyword={{ keyword|urlencode }}" class="btn btn-block btn-light">Reset Filters</a>
+                        {% elif selected_category %}
+                            <a href="{% url 'products_by_category' selected_category.slug %}" class="btn btn-block btn-light">Reset Filters</a>
+                        {% else %}
+                            <a href="{% url 'store' %}" class="btn btn-block btn-light">Reset Filters</a>
+                        {% endif %}
+                    </form>
                 </div><!-- card-body.// -->
             </div>
         </article> <!-- filter-group .// -->
@@ -128,14 +139,44 @@
         <main class="col-lg-9 col-md-8 col-sm-12">
     
     <header class="border-bottom mb-4 pb-3">
-            <div class="form-inline">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            {% if keyword %}
+                <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} found for "<strong>{{ keyword }}</strong>" </span>
+            {% elif selected_category %}
+                <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} in <strong>{{ selected_category.Category_name }}</strong></span>
+            {% else %}
+                <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} found </span>
+            {% endif %}
+            {% if filters_applied %}
+                <span class="badge badge-info">Filters applied</span>
+            {% endif %}
+            <form method="get" class="form-inline ms-auto">
                 {% if keyword %}
-                    <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} found for "<strong>{{ keyword }}</strong>" </span>
-                {% else %}
-                    <span class="mr-md-auto">{{ product_count }} Item{{ product_count|pluralize }} found </span>
+                    <input type="hidden" name="keyword" value="{{ keyword }}">
                 {% endif %}
-                
-            </div>
+                {% if current_filters.min_price %}
+                    <input type="hidden" name="min_price" value="{{ current_filters.min_price }}">
+                {% endif %}
+                {% if current_filters.max_price %}
+                    <input type="hidden" name="max_price" value="{{ current_filters.max_price }}">
+                {% endif %}
+                {% if current_filters.in_stock %}
+                    <input type="hidden" name="in_stock" value="on">
+                {% endif %}
+                {% if current_filters.sale_only %}
+                    <input type="hidden" name="sale_only" value="on">
+                {% endif %}
+                <label class="mr-2 mb-0 text-muted">Sort by:</label>
+                <select name="sort" class="form-control" onchange="this.form.submit()">
+                    <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>Newest</option>
+                    <option value="oldest" {% if current_filters.sort == 'oldest' %}selected{% endif %}>Oldest</option>
+                    <option value="price_low_high" {% if current_filters.sort == 'price_low_high' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high_low" {% if current_filters.sort == 'price_high_low' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="name_asc" {% if current_filters.sort == 'name_asc' %}selected{% endif %}>Name A-Z</option>
+                    <option value="name_desc" {% if current_filters.sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
+                </select>
+            </form>
+        </div>
     </header><!-- sect-heading -->
     
     <div class="row">
@@ -174,16 +215,21 @@
     
     
     {% if products.has_other_pages %}
+    {% if keyword %}
+      {% url 'search' as pagination_base_url %}
+    {% elif selected_category %}
+      {% url 'products_by_category' selected_category.slug as pagination_base_url %}
+    {% else %}
+      {% url 'store' as pagination_base_url %}
+    {% endif %}
     <nav class="mt-4" aria-label="Page navigation">
       <ul class="pagination">
         {% if products.has_previous %}
           <li class="page-item">
-            {% if keyword %}
-              <a class="page-link" href="{% url 'search' %}?keyword={{ keyword|urlencode }}&page={{ products.previous_page_number }}">Previous</a>
-            {% elif selected_category %}
-              <a class="page-link" href="{% url 'products_by_category' selected_category.slug %}?page={{ products.previous_page_number }}">Previous</a>
+            {% if current_query_string %}
+              <a class="page-link" href="{{ pagination_base_url }}?{{ current_query_string }}&page={{ products.previous_page_number }}">Previous</a>
             {% else %}
-              <a class="page-link" href="{% url 'store' %}?page={{ products.previous_page_number }}">Previous</a>
+              <a class="page-link" href="{{ pagination_base_url }}?page={{ products.previous_page_number }}">Previous</a>
             {% endif %}
           </li>
         {% else %}
@@ -199,12 +245,10 @@
             </li>
           {% else %}
             <li class="page-item">
-              {% if keyword %}
-                <a class="page-link" href="{% url 'search' %}?keyword={{ keyword|urlencode }}&page={{ page_num }}">{{ page_num }}</a>
-              {% elif selected_category %}
-                <a class="page-link" href="{% url 'products_by_category' selected_category.slug %}?page={{ page_num }}">{{ page_num }}</a>
+              {% if current_query_string %}
+                <a class="page-link" href="{{ pagination_base_url }}?{{ current_query_string }}&page={{ page_num }}">{{ page_num }}</a>
               {% else %}
-                <a class="page-link" href="{% url 'store' %}?page={{ page_num }}">{{ page_num }}</a>
+                <a class="page-link" href="{{ pagination_base_url }}?page={{ page_num }}">{{ page_num }}</a>
               {% endif %}
             </li>
           {% endif %}
@@ -212,12 +256,10 @@
 
         {% if products.has_next %}
           <li class="page-item">
-            {% if keyword %}
-              <a class="page-link" href="{% url 'search' %}?keyword={{ keyword|urlencode }}&page={{ products.next_page_number }}">Next</a>
-            {% elif selected_category %}
-              <a class="page-link" href="{% url 'products_by_category' selected_category.slug %}?page={{ products.next_page_number }}">Next</a>
+            {% if current_query_string %}
+              <a class="page-link" href="{{ pagination_base_url }}?{{ current_query_string }}&page={{ products.next_page_number }}">Next</a>
             {% else %}
-              <a class="page-link" href="{% url 'store' %}?page={{ products.next_page_number }}">Next</a>
+              <a class="page-link" href="{{ pagination_base_url }}?page={{ products.next_page_number }}">Next</a>
             {% endif %}
           </li>
         {% else %}
@@ -237,4 +279,139 @@
     </section>
     <!-- ========================= SECTION CONTENT END// ========================= -->    
 
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+.price-slider-wrapper .price-chip {
+    background:#1f2a44;
+    color:#fff;
+    padding:6px 14px;
+    border-radius:12px;
+    font-weight:600;
+}
+.range-slider {
+    position:relative;
+    height:6px;
+    background:#e0e0e0;
+    border-radius:3px;
+}
+.range-slider input[type="range"] {
+    position:absolute;
+    width:100%;
+    height:6px;
+    top:-6px;
+    background:none;
+    pointer-events:none;
+    -webkit-appearance:none;
+}
+.range-slider input::-webkit-slider-thumb {
+    pointer-events:auto;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#fff;
+    border:3px solid #ff0157;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+    -webkit-appearance:none;
+}
+.range-slider .slider-track {
+    position:absolute;
+    height:6px;
+    background-image:linear-gradient(90deg, #5a4ac7, #ff0157);
+    border-radius:3px;
+    top:0;
+}
+</style>
+<script>
+(function() {
+  const sliders = document.querySelectorAll('.price-slider-wrapper');
+  sliders.forEach(function(wrapper) {
+    const minInput = wrapper.parentElement.querySelector('.price-input-min');
+    const maxInput = wrapper.parentElement.querySelector('.price-input-max');
+    const minDisplay = wrapper.querySelector('.min-value');
+    const maxDisplay = wrapper.querySelector('.max-value');
+    const rangeMin = wrapper.querySelector('.range-min');
+    const rangeMax = wrapper.querySelector('.range-max');
+    const track = wrapper.querySelector('.slider-track');
+    let sliderMinBound = parseInt(wrapper.dataset.min) || 0;
+    let sliderMaxBound = parseInt(wrapper.dataset.max) || 5000;
+    const step = parseInt(wrapper.dataset.step) || 50;
+    const gap = step * 2;
+
+    function setTrack() {
+      const percent1 = ((rangeMin.value - sliderMinBound) / (sliderMaxBound - sliderMinBound)) * 100;
+      const percent2 = ((rangeMax.value - sliderMinBound) / (sliderMaxBound - sliderMinBound)) * 100;
+      track.style.background = `linear-gradient(90deg, #e0e0e0 ${percent1}%, #ff0157 ${percent1}%, #ff0157 ${percent2}%, #e0e0e0 ${percent2}%)`;
+    }
+
+    function syncToInputs() {
+      minInput.value = rangeMin.value;
+      maxInput.value = rangeMax.value;
+      minDisplay.textContent = rangeMin.value;
+      maxDisplay.textContent = rangeMax.value;
+      setTrack();
+    }
+
+    function clampRanges(trigger) {
+      let minVal = parseInt(rangeMin.value);
+      let maxVal = parseInt(rangeMax.value);
+      if (maxVal - minVal <= gap) {
+        if (trigger === rangeMin) {
+          rangeMin.value = maxVal - gap;
+        } else {
+          rangeMax.value = minVal + gap;
+        }
+      }
+      syncToInputs();
+    }
+
+    function expandBoundsIfNeeded(value) {
+      if (value > sliderMaxBound) {
+        sliderMaxBound = value;
+        rangeMin.max = sliderMaxBound;
+        rangeMax.max = sliderMaxBound;
+      }
+      if (value < sliderMinBound) {
+        sliderMinBound = value;
+        rangeMin.min = sliderMinBound;
+        rangeMax.min = sliderMinBound;
+      }
+    }
+
+    rangeMin.addEventListener('input', function() {
+      clampRanges(rangeMin);
+    });
+    rangeMax.addEventListener('input', function() {
+      clampRanges(rangeMax);
+    });
+
+    minInput.addEventListener('change', function() {
+      let value = parseInt(this.value);
+      if (isNaN(value)) {
+        value = sliderMinBound;
+      }
+      expandBoundsIfNeeded(value);
+
+      value = Math.min(value, parseInt(rangeMax.value) - gap);
+      rangeMin.value = Math.floor(value / step) * step;
+      syncToInputs();
+    });
+
+    maxInput.addEventListener('change', function() {
+      let value = parseInt(this.value);
+      if (isNaN(value)) {
+        value = sliderMaxBound;
+      }
+      expandBoundsIfNeeded(value);
+
+      value = Math.max(value, parseInt(rangeMin.value) + gap);
+      rangeMax.value = Math.ceil(value / step) * step;
+      syncToInputs();
+    });
+
+    syncToInputs();
+  });
+})();
+</script>
 {% endblock %}

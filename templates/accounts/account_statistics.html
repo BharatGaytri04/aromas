@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y">
+  <div class="container">
+    <div class="row">
+      <!-- Sidebar -->
+      <aside class="col-md-3">
+        <nav class="list-group card">
+          <a class="list-group-item" href="{% url 'accounts:dashboard' %}">
+            <i class="fas fa-user-circle me-2"></i> My Dashboard
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:edit_profile' %}">
+            <i class="fas fa-user-edit me-2"></i> Edit Profile
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:change_password' %}">
+            <i class="fas fa-key me-2"></i> Change Password
+          </a>
+          <a class="list-group-item" href="{% url 'cart' %}">
+            <i class="fas fa-shopping-cart me-2"></i> My Cart
+          </a>
+          <a class="list-group-item active" href="{% url 'accounts:account_statistics' %}">
+            <i class="fas fa-chart-bar me-2"></i> Account Statistics
+          </a>
+          <a class="list-group-item" href="{% url 'store' %}">
+            <i class="fas fa-shopping-bag me-2"></i> Continue Shopping
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="col-md-9">
+        <article class="card">
+          <header class="card-header bg-info text-white">
+            <strong class="d-inline-block mr-3">
+              <i class="fas fa-chart-bar me-2"></i>Account Statistics
+            </strong>
+          </header>
+          <div class="card-body">
+            <!-- Account Statistics -->
+            <div class="row">
+              <div class="col-md-12">
+                <h5 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Account Statistics</h5>
+                <div class="row">
+                  <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white text-center">
+                      <div class="card-body">
+                        <h3>{{ user.date_joined|date:"Y" }}</h3>
+                        <p class="mb-0">Member Since</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white text-center">
+                      <div class="card-body">
+                        <h3>0</h3>
+                        <p class="mb-0">Total Orders</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white text-center">
+                      <div class="card-body">
+                        <h3>0</h3>
+                        <p class="mb-0">Pending Orders</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-white text-center">
+                      <div class="card-body">
+                        <h3>0</h3>
+                        <p class="mb-0">Completed Orders</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

@@ -24,7 +24,7 @@
 <link href="{% static 'fonts/fontawesome/css/all.min.css' %}" type="text/css" rel="stylesheet">
 
 <!-- Google Fonts -->
-<link href="{% static 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap' %}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- custom style -->
 <link href="{% static 'css/ui.css' %}" rel="stylesheet" type="text/css"/>
@@ -51,9 +51,16 @@ $(document).ready(function() {
 <!-- templates\includes\navbar.html -->
 {% include 'includes/navbar.html'%}
 
+{% include 'includes/alerts.html' %}
+
 {% block content %}
 <!-- content -->
 {% endblock %}
 
 <!-- footer -->
  {% include 'includes/footer.html'%}
+
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

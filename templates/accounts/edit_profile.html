@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y">
+  <div class="container">
+    <div class="row">
+      <!-- Sidebar -->
+      <aside class="col-md-3">
+        <nav class="list-group card">
+          <a class="list-group-item" href="{% url 'accounts:dashboard' %}">
+            <i class="fas fa-user-circle me-2"></i> My Dashboard
+          </a>
+          <a class="list-group-item active" href="{% url 'accounts:edit_profile' %}">
+            <i class="fas fa-user-edit me-2"></i> Edit Profile
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:change_password' %}">
+            <i class="fas fa-key me-2"></i> Change Password
+          </a>
+          <a class="list-group-item" href="{% url 'cart' %}">
+            <i class="fas fa-shopping-cart me-2"></i> My Cart
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:account_statistics' %}">
+            <i class="fas fa-chart-bar me-2"></i> Account Statistics
+          </a>
+          <a class="list-group-item" href="{% url 'store' %}">
+            <i class="fas fa-shopping-bag me-2"></i> Continue Shopping
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="col-md-9">
+        <article class="card">
+          <header class="card-header bg-primary text-white">
+            <strong class="d-inline-block mr-3">
+              <i class="fas fa-user-edit me-2"></i>Edit Profile
+            </strong>
+          </header>
+          <div class="card-body">
+            <form action="{% url 'accounts:edit_profile' %}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              
+              <div class="row mb-4">
+                <div class="col-md-4 text-center">
+                  <div class="profile-avatar mb-3">
+                    {% if user.profile_image %}
+                      <img src="{{ user.profile_image.url }}" alt="Profile Picture" class="img-fluid rounded-circle border" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                      <img src="{% static 'images/avatars/avatar1.jpg' %}" alt="Default Profile" class="img-fluid rounded-circle border" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                  </div>
+                  <label for="id_profile_image" class="form-label">Profile Picture</label>
+                  {{ form.profile_image }}
+                  {% if form.profile_image.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.profile_image.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <small class="text-muted d-block mt-2">Upload JPG, PNG, or GIF (max 5 MB)</small>
+                </div>
+                <div class="col-md-8">
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You can update your name, phone number, and profile picture here. Your email remains the same for security reasons.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="id_first_name">First Name</label>
+                  {{ form.first_name }}
+                  {% if form.first_name.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.first_name.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="id_last_name">Last Name</label>
+                  {{ form.last_name }}
+                  {% if form.last_name.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.last_name.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="id_phone_number">Phone Number</label>
+                  {{ form.phone_number }}
+                  {% if form.phone_number.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.phone_number.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="id_email">Email Address</label>
+                  <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                  <small class="text-muted">Email cannot be changed</small>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="id_address_line_1">Address Line 1</label>
+                  {{ form.address_line_1 }}
+                  {% if form.address_line_1.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.address_line_1.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="id_address_line_2">Address Line 2</label>
+                  {{ form.address_line_2 }}
+                  {% if form.address_line_2.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.address_line_2.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="id_city">City</label>
+                  {{ form.city }}
+                  {% if form.city.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.city.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="id_state">State</label>
+                  {{ form.state }}
+                  {% if form.state.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.state.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="id_country">Country</label>
+                  {{ form.country }}
+                  {% if form.country.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.country.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="id_pincode">Pincode</label>
+                  {{ form.pincode }}
+                  {% if form.pincode.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.pincode.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                  {% for error in form.non_field_errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save me-2"></i>Update Profile
+                </button>
+                <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary">
+                  <i class="fas fa-times me-2"></i>Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

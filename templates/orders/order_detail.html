@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+  <div class="container">
+    <div class="row">
+      <aside class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Order Summary</h5>
+          </div>
+          <div class="card-body">
+            <p class="mb-2"><strong>Order #:</strong> {{ order.order_number }}</p>
+            <p class="mb-2"><strong>Placed on:</strong> {{ order.created_at|date:"F d, Y g:i A" }}</p>
+            <p class="mb-2">
+              <strong>Status:</strong>
+              {% if order.status == 'Cancelled' %}
+                <span class="badge badge-danger">{{ order.status }}</span>
+              {% elif order.status in 'Delivered Completed' %}
+                <span class="badge badge-success">{{ order.status }}</span>
+              {% elif order.status == 'New' %}
+                <span class="badge badge-primary">{{ order.status }}</span>
+              {% else %}
+                <span class="badge badge-warning text-dark">{{ order.status }}</span>
+              {% endif %}
+            </p>
+            <p class="mb-2"><strong>Payment Method:</strong> {{ order.payment.get_payment_method_display|default:"N/A" }}</p>
+            <p class="mb-2"><strong>Payment Status:</strong> {{ order.payment.status|default:"N/A" }}</p>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Shipping Address</h6>
+          </div>
+          <div class="card-body">
+            <p class="mb-1"><strong>{{ order.full_name }}</strong></p>
+            <p class="mb-1">{{ order.address_line_1 }}</p>
+            {% if order.address_line_2 %}<p class="mb-1">{{ order.address_line_2 }}</p>{% endif %}
+            <p class="mb-1">{{ order.city }}, {{ order.state }} {{ order.pincode }}</p>
+            <p class="mb-0">{{ order.country }}</p>
+            <p class="mb-0"><i class="fas fa-phone me-2"></i>{{ order.phone }}</p>
+            <p class="mb-0"><i class="fas fa-envelope me-2"></i>{{ order.email }}</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Order Totals</h6>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Subtotal:</span>
+              <strong>₹{{ order.order_total|floatformat:2 }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Tax:</span>
+              <strong>₹{{ order.tax|floatformat:2 }}</strong>
+            </div>
+            {% if order.discount %}
+            <div class="d-flex justify-content-between mb-2 text-success">
+              <span>Discount:</span>
+              <strong>-₹{{ order.discount|floatformat:2 }}</strong>
+            </div>
+            {% endif %}
+            <hr>
+            <div class="d-flex justify-content-between">
+              <span class="h5">Total:</span>
+              <span class="h5 text-primary">₹{{ order.final_total|floatformat:2 }}</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-shopping-basket me-2"></i>Order Items</h5>
+            <div>
+              <a href="{% url 'orders:download_invoice' order.order_number %}" class="btn btn-light btn-sm">
+                <i class="fas fa-file-download me-1"></i>Download Invoice
+              </a>
+              <a href="{% url 'orders:order_list' %}" class="btn btn-outline-light btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back to Orders
+              </a>
+            </div>
+          </div>
+          <div class="card-body">
+            {% for item in order_products %}
+            <div class="d-flex mb-3 pb-3 border-bottom">
+              <div class="flex-shrink-0">
+                <img src="{{ item.product.images.url }}" alt="{{ item.product.product_name }}" class="img-sm rounded" style="width: 80px; height: 80px; object-fit: cover;">
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-1">{{ item.product.product_name }}</h6>
+                {% if item.variations.all %}
+                <p class="text-muted small mb-1">
+                  {% for variation in item.variations.all %}
+                    <span class="badge badge-light border me-1">{{ variation.variation_category|title }}: {{ variation.variation_value|title }}</span>
+                  {% endfor %}
+                </p>
+                {% endif %}
+                <p class="text-muted mb-0">Quantity: {{ item.quantity }}</p>
+                <p class="mb-0">Price: ₹{{ item.product_price|floatformat:2 }}</p>
+              </div>
+              <div class="text-end">
+                <strong>₹{{ item.sub_total|floatformat:2 }}</strong>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Order Timeline -->
+        {% if timeline %}
+        <div class="card">
+          <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="fas fa-shipping-fast me-2"></i>Order Timeline</h6>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled timeline">
+              {% for step in timeline %}
+              <li class="mb-3">
+                <div class="d-flex align-items-center">
+                  <span class="badge {% if step.completed %}badge-success{% else %}badge-secondary{% endif %} me-2">
+                    <i class="fas fa-check"></i>
+                  </span>
+                  <div>
+                    <strong>{{ step.status }}</strong>
+                    {% if step.date %}
+                      <div class="text-muted small">{{ step.date|date:"M d, Y g:i A" }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+      </main>
+    </div>
+  </div>
+</section>
+
+<style>
+.timeline {
+  position: relative;
+  padding-left: 20px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e9ecef;
+}
+.timeline li {
+  position: relative;
+}
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0d6efd;
+}
+</style>
+{% endblock %}
+

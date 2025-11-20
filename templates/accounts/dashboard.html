@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y">
+  <div class="container">
+    <div class="row">
+      <!-- Sidebar -->
+      <aside class="col-md-3">
+        <nav class="list-group card">
+          <a class="list-group-item active" href="{% url 'accounts:dashboard' %}">
+            <i class="fas fa-user-circle me-2"></i> My Dashboard
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:edit_profile' %}">
+            <i class="fas fa-user-edit me-2"></i> Edit Profile
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:change_password' %}">
+            <i class="fas fa-key me-2"></i> Change Password
+          </a>
+          <a class="list-group-item" href="{% url 'orders:order_list' %}">
+            <i class="fas fa-shopping-bag me-2"></i> My Orders
+          </a>
+          <a class="list-group-item" href="{% url 'cart' %}">
+            <i class="fas fa-shopping-cart me-2"></i> My Cart
+          </a>
+          <a class="list-group-item" href="{% url 'accounts:account_statistics' %}">
+            <i class="fas fa-chart-bar me-2"></i> Account Statistics
+          </a>
+          <a class="list-group-item" href="{% url 'store' %}">
+            <i class="fas fa-shopping-bag me-2"></i> Continue Shopping
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="col-md-9">
+        <article class="card">
+          <header class="card-header bg-primary text-white">
+            <strong class="d-inline-block mr-3">
+              <i class="fas fa-user-circle me-2"></i>My Dashboard
+            </strong>
+          </header>
+          <div class="card-body">
+            <!-- Welcome Section -->
+            <div class="row mb-4">
+              <div class="col-md-3 text-center mb-3">
+                <div class="profile-avatar mb-3">
+                  {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile Picture" class="img-fluid rounded-circle border" style="width: 140px; height: 140px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'images/avatars/avatar1.jpg' %}" alt="Default Profile" class="img-fluid rounded-circle border" style="width: 140px; height: 140px; object-fit: cover;">
+                  {% endif %}
+                </div>
+                <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-camera me-1"></i>Update Photo
+                </a>
+              </div>
+              <div class="col-md-9">
+                <h4 class="mb-2">Welcome, {{ user.first_name|default:user.email }}!</h4>
+                <p class="text-muted">This is your personal dashboard. Here you can manage your account information, track your orders, and update your profile.</p>
+              </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mb-4 g-3">
+              <div class="col-md-4 col-sm-12">
+                <div class="card text-center shadow-sm border-primary">
+                  <div class="card-body">
+                    <i class="fas fa-box fa-2x text-primary mb-2"></i>
+                    <h4 class="mb-0">{{ total_orders }}</h4>
+                    <small class="text-muted">Total Orders</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-12">
+                <div class="card text-center shadow-sm border-success">
+                  <div class="card-body">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h4 class="mb-0">{{ completed_orders }}</h4>
+                    <small class="text-muted">Completed</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 col-sm-12">
+                <div class="card text-center shadow-sm border-warning">
+                  <div class="card-body">
+                    <i class="fas fa-truck-loading fa-2x text-warning mb-2"></i>
+                    <h4 class="mb-0">{{ pending_orders }}</h4>
+                    <small class="text-muted">In Progress</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Profile Information -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h5 class="mb-3"><i class="fas fa-user me-2"></i>Profile Information</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <tbody>
+                      <tr>
+                        <td width="30%" class="font-weight-bold">Full Name:</td>
+                        <td>{{ user.get_full_name|default:"Not set" }}</td>
+                      </tr>
+                      <tr>
+                        <td class="font-weight-bold">Email:</td>
+                        <td>{{ user.email }}</td>
+                      </tr>
+                      <tr>
+                        <td class="font-weight-bold">Phone Number:</td>
+                        <td>{{ user.phone_number|default:"Not set" }}</td>
+                      </tr>
+                      <tr>
+                        <td class="font-weight-bold">Username:</td>
+                        <td>{{ user.username }}</td>
+                      </tr>
+                      <tr>
+                        <td class="font-weight-bold">Account Status:</td>
+                        <td>
+                          {% if user.is_active %}
+                            <span class="badge badge-success"><i class="fas fa-check-circle me-1"></i>Active</span>
+                          {% else %}
+                            <span class="badge badge-danger"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="font-weight-bold">Member Since:</td>
+                        <td>{{ user.date_joined|date:"F d, Y" }}</td>
+                      </tr>
+                      <tr>
+                        <td class="font-weight-bold">Last Login:</td>
+                        <td>{{ user.last_login|date:"F d, Y g:i A"|default:"Never" }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary mt-3">
+                  <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+              </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Recent Orders</h5>
+                  <a href="{% url 'orders:order_list' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-list me-1"></i>View All Orders
+                  </a>
+                </div>
+                
+                {% if recent_orders %}
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="thead-light">
+                      <tr>
+                        <th>Order #</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for order in recent_orders %}
+                      <tr>
+                        <td><strong>{{ order.order_number }}</strong></td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                        <td>
+                          {% if order.status == 'Cancelled' %}
+                            <span class="badge badge-danger">{{ order.status }}</span>
+                          {% elif order.status == 'Delivered' or order.status == 'Completed' %}
+                            <span class="badge badge-success">{{ order.status }}</span>
+                          {% elif order.status == 'New' %}
+                            <span class="badge badge-primary">{{ order.status }}</span>
+                          {% else %}
+                            <span class="badge badge-warning text-dark">{{ order.status }}</span>
+                          {% endif %}
+                        </td>
+                        <td>₹{{ order.final_total|floatformat:2 }}</td>
+                        <td>
+                          <a href="{% url 'orders:order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-eye me-1"></i>Details
+                          </a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>You haven't placed any orders yet. Start shopping to see your orders here!
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+
+          </div>
+        </article>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

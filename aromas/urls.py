@@ -17,15 +17,32 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
-from . import views
-from django.conf.urls.static import static
+
 from django.conf import settings
+from django.conf.urls.static import static
+
+from . import views
+from accounts.views import honeypot_admin_login
 
 urlpatterns = [
-    path('admin/', admin.site.urls),    
+    path('admin/', honeypot_admin_login, name='admin_honeypot'),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('', views.home, name='home'),
     path('store/', include('store.urls')),
     path('cart/', include('cart.urls')),
+    path('orders/', include(('orders.urls', 'orders'), namespace='orders')),
+    path('seller/', include(('seller.urls', 'seller'), namespace='seller')),
+    path('wishlist/', include(('wishlist.urls', 'wishlist'), namespace='wishlist')),
+    path('reviews/', include(('reviews.urls', 'reviews'), namespace='reviews')),
+    path('coupons/', include(('coupons.urls', 'coupons'), namespace='coupons')),
+    path('loyalty/', include(('loyalty.urls', 'loyalty'), namespace='loyalty')),
+    path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('returns-refunds/', views.returns_policy, name='returns_policy'),
+    path('terms-conditions/', views.terms_conditions, name='terms_conditions'),
+    path('shipping-policy/', views.shipping_policy, name='shipping_policy'),
+    path('disclaimer/', views.disclaimer_policy, name='disclaimer_policy'),
+    path('cancellation-policy/', views.cancellation_policy, name='cancellation_policy'),
     # Redirect old cart.html to new cart URL
     path('cart.html', RedirectView.as_view(url='/cart/', permanent=True)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

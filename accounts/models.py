@@ -41,13 +41,20 @@ class Account(AbstractBaseUser):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     phone_number = models.CharField(max_length=50)
+    profile_image = models.ImageField(upload_to='photos/profile_images/', blank=True, null=True)
+    address_line_1 = models.CharField(max_length=100, blank=True)
+    address_line_2 = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    state = models.CharField(max_length=50, blank=True)
+    country = models.CharField(max_length=50, default='India', blank=True)
+    pincode = models.CharField(max_length=10, blank=True)
 
     #reqired
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)  # Requires email verification
     is_superadmin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
@@ -58,10 +65,53 @@ class Account(AbstractBaseUser):
     def __str__(self):
         return self.email
     
+    def get_full_name(self):
+        """Return the full name of the user"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}".strip()
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        else:
+            # Fallback: use username or first part of email (for privacy)
+            return self.username if self.username else self.email.split('@')[0]
+    
+    def get_display_name(self):
+        """Return display name for reviews (privacy-friendly - shows full name)"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}".strip()
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        elif self.username:
+            return self.username
+        else:
+            # Fallback: generic name (never show email)
+            return "Customer"
+    
     def has_perm(self, perm, obj=None):
         return self.is_admin
     
     def has_module_perms(self, add_label):
         return True
+
+
+class LoginAttempt(models.Model):
+    user = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='login_attempts')
+    email = models.EmailField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+    success = models.BooleanField(default=False)
+    attempted_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-attempted_at']
+    
+    def __str__(self):
+        status = 'Success' if self.success else 'Failed'
+        identifier = self.user.email if self.user else (self.email or 'Unknown user')
+        return f"{identifier} - {status} @ {self.attempted_at:%Y-%m-%d %H:%M}"
 
    

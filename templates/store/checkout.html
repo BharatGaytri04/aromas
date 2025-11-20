@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-content padding-y bg">
+<div class="container">
+
+<div class="row">
+	<!-- Order Summary -->
+	<aside class="col-lg-4">
+		<div class="card mb-4">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Order Summary</h5>
+			</div>
+			<div class="card-body">
+				{% for cart_item in cart_items %}
+				<div class="d-flex mb-3 pb-3 border-bottom">
+					<div class="flex-shrink-0">
+						<img src="{{ cart_item.product.images.url }}" class="img-sm rounded" style="width: 60px; height: 60px; object-fit: cover;">
+					</div>
+					<div class="flex-grow-1 ms-3">
+						<h6 class="mb-1">{{ cart_item.product.product_name }}</h6>
+						{% if cart_item.variations.all %}
+							<p class="text-muted small mb-1">
+								{% for variation in cart_item.variations.all %}
+									<span class="badge badge-light border">{{ variation.variation_category|title }}: {{ variation.variation_value|title }}</span>
+								{% endfor %}
+							</p>
+						{% endif %}
+						<p class="text-muted small mb-0">Qty: {{ cart_item.quantity }} × ₹{{ cart_item.product.price }}</p>
+					</div>
+					<div class="text-end">
+						<strong>₹{{ cart_item.sub_total }}</strong>
+					</div>
+				</div>
+				{% endfor %}
+				
+				<hr>
+				
+				<dl class="dlist-align">
+					<dt>Subtotal:</dt>
+					<dd class="text-right">₹{{ total|floatformat:2 }}</dd>
+				</dl>
+				<dl class="dlist-align">
+					<dt>Tax (2%):</dt>
+					<dd class="text-right">₹{{ tax|floatformat:2 }}</dd>
+				</dl>
+				<dl class="dlist-align">
+					<dt class="h5">Total:</dt>
+					<dd class="text-right text-dark b h5"><strong>₹{{ grand_total|floatformat:2 }}</strong></dd>
+				</dl>
+			</div>
+		</div>
+		
+		<div class="card">
+			<div class="card-body">
+				<p class="text-center mb-3">
+					<img src="{% static 'images/misc/payments.png' %}" height="26" alt="Payment methods">
+				</p>
+				<p class="text-muted small text-center mb-0">Secure payment processing</p>
+			</div>
+		</div>
+	</aside>
+	
+	<!-- Checkout Form -->
+	<main class="col-lg-8">
+		<article class="card">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Shipping Information</h5>
+			</div>
+			<div class="card-body">
+				<form action="{% url 'checkout' %}" method="POST" id="checkoutForm">
+					{% csrf_token %}
+					
+					<!-- Personal Information -->
+					<div class="row mb-4">
+						<div class="col-md-12">
+							<h6 class="mb-3 text-primary"><i class="fas fa-user me-2"></i>Personal Information</h6>
+						</div>
+						<div class="col-md-6 mb-3">
+							<label class="form-label">First Name <span class="text-danger">*</span></label>
+							{{ form.first_name }}
+							{% if form.first_name.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.first_name.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-6 mb-3">
+							<label class="form-label">Last Name <span class="text-danger">*</span></label>
+							{{ form.last_name }}
+							{% if form.last_name.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.last_name.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-6 mb-3">
+							<label class="form-label">Email Address <span class="text-danger">*</span></label>
+							{{ form.email }}
+							{% if form.email.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.email.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-6 mb-3">
+							<label class="form-label">Phone Number <span class="text-danger">*</span></label>
+							{{ form.phone }}
+							{% if form.phone.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.phone.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+					</div>
+					
+					<hr>
+					
+					<!-- Shipping Address -->
+					<div class="row mb-4">
+						<div class="col-md-12">
+							<h6 class="mb-3 text-primary"><i class="fas fa-home me-2"></i>Shipping Address</h6>
+							{% if user_has_saved_address %}
+							<div class="card mb-3">
+								<div class="card-body">
+									<div class="form-check">
+										<input class="form-check-input address-choice" type="radio" name="address_choice" id="addressSaved" value="saved" checked>
+										<label class="form-check-label" for="addressSaved">
+											Use saved address
+										</label>
+									</div>
+									<div class="ms-4 mt-2 text-muted small">
+										<strong>{{ request.user.get_full_name|default:request.user.email }}</strong><br>
+										{{ request.user.address_line_1 }}{% if request.user.address_line_2 %}, {{ request.user.address_line_2 }}{% endif %}<br>
+										{{ request.user.city }}, {{ request.user.state }} {{ request.user.pincode }}<br>
+										{{ request.user.country }}<br>
+										<small class="d-block mt-2"><a href="{% url 'accounts:edit_profile' %}" target="_blank">Manage saved address</a></small>
+									</div>
+									<div class="form-check mt-3">
+										<input class="form-check-input address-choice" type="radio" name="address_choice" id="addressNew" value="new">
+										<label class="form-check-label" for="addressNew">
+											Use different address
+										</label>
+									</div>
+								</div>
+							</div>
+							{% else %}
+							<div class="alert alert-info">
+								<i class="fas fa-info-circle me-2"></i>
+								No saved address found. Fill in the details below or <a href="{% url 'accounts:edit_profile' %}" target="_blank">add one to your profile</a>.
+							</div>
+							<input type="hidden" name="address_choice" value="new">
+							{% endif %}
+						</div>
+						<div class="col-md-12 mb-3 address-field-group">
+							<label class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+							{{ form.address_line_1 }}
+							{% if form.address_line_1.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.address_line_1.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-12 mb-3 address-field-group">
+							<label class="form-label">Address Line 2</label>
+							{{ form.address_line_2 }}
+							{% if form.address_line_2.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.address_line_2.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-4 mb-3 address-field-group">
+							<label class="form-label">City <span class="text-danger">*</span></label>
+							{{ form.city }}
+							{% if form.city.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.city.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-4 mb-3 address-field-group">
+							<label class="form-label">State <span class="text-danger">*</span></label>
+							{{ form.state }}
+							{% if form.state.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.state.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-4 mb-3 address-field-group">
+							<label class="form-label">Country <span class="text-danger">*</span></label>
+							{{ form.country }}
+							{% if form.country.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.country.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+						<div class="col-md-4 mb-3 address-field-group">
+							<label class="form-label">Pincode (Optional)</label>
+							{{ form.pincode }}
+							{% if form.pincode.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.pincode.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+					</div>
+					
+					<hr>
+					
+					<!-- Order Notes -->
+					<div class="row mb-4">
+						<div class="col-md-12">
+							<label class="form-label">Order Notes (Optional)</label>
+							{{ form.order_note }}
+							<small class="form-text text-muted">Any special instructions for your order</small>
+							{% if form.order_note.errors %}
+								<div class="text-danger small mt-1">
+									{% for error in form.order_note.errors %}{{ error }}{% endfor %}
+								</div>
+							{% endif %}
+						</div>
+					</div>
+					
+					<hr>
+					
+					<!-- Payment Method -->
+					<div class="row mb-4">
+						<div class="col-md-12">
+							<h6 class="mb-3 text-primary"><i class="fas fa-credit-card me-2"></i>Payment Method</h6>
+							<div class="form-check mb-2">
+								<input class="form-check-input" type="radio" name="payment_method" id="cod" value="COD" checked>
+								<label class="form-check-label" for="cod">
+									<i class="fas fa-money-bill-wave me-2"></i>Cash on Delivery (COD)
+									<small class="text-muted d-block ms-4 mt-1">Pay when you receive your order</small>
+								</label>
+							</div>
+							{% if razorpay_enabled %}
+							<div class="form-check mb-2">
+								<input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="RAZORPAY">
+								<label class="form-check-label" for="razorpay">
+									<i class="fas fa-credit-card me-2"></i>Pay Online (Razorpay)
+									<small class="text-muted d-block ms-4 mt-1">Credit/Debit Card, UPI, Net Banking</small>
+								</label>
+							</div>
+							{% endif %}
+						</div>
+					</div>
+					
+					<!-- Submit Button -->
+					<div class="d-grid gap-2">
+						<button type="submit" class="btn btn-primary btn-lg">
+							<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}
+						</button>
+						<a href="{% url 'cart' %}" class="btn btn-outline-secondary">
+							<i class="fas fa-arrow-left me-2"></i>Back to Cart
+						</a>
+					</div>
+				</form>
+			</div>
+		</article>
+	</main>
+</div>
+
+</div> <!-- container .//  -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+	const addressChoices = document.querySelectorAll('.address-choice');
+	const addressFields = document.querySelectorAll('.address-field-group input, .address-field-group select, .address-field-group textarea');
+
+	function toggleAddressFields() {
+		const savedOption = document.querySelector('.address-choice[value="saved"]');
+		const useSaved = savedOption && savedOption.checked;
+		addressFields.forEach(function(field) {
+			field.readOnly = useSaved;
+			field.classList.toggle('bg-light', useSaved);
+		});
+	}
+
+	addressChoices.forEach(function(choice) {
+		choice.addEventListener('change', toggleAddressFields);
+	});
+
+	toggleAddressFields();
+})();
+</script>
+{% endblock %}
+

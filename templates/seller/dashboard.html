@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-store me-2"></i>Seller Dashboard - Order Management</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary"><i class="fas fa-shopping-cart fa-2x mb-2"></i></h5>
+            <h3 class="mb-0">{{ total_orders }}</h3>
+            <p class="text-muted mb-0">Total Orders</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <h5 class="card-title text-info"><i class="fas fa-bell fa-2x mb-2"></i></h5>
+            <h3 class="mb-0">{{ new_orders }}</h3>
+            <p class="text-muted mb-0">New Orders</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <h5 class="card-title text-warning"><i class="fas fa-cog fa-2x mb-2"></i></h5>
+            <h3 class="mb-0">{{ in_process_orders }}</h3>
+            <p class="text-muted mb-0">In Process</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <h5 class="card-title text-success"><i class="fas fa-check-circle fa-2x mb-2"></i></h5>
+            <h3 class="mb-0">{{ ready_to_ship }}</h3>
+            <p class="text-muted mb-0">Ready to Ship</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="get" action="{% url 'seller:dashboard' %}" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Search Orders</label>
+            <input type="text" name="search" class="form-control" placeholder="Order #, Name, Email, Phone" value="{{ search_query }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              <option value="">All Status</option>
+              {% for status_code, status_name in status_choices %}
+                <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>
+                  {{ status_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Date Range</label>
+            <select name="date" class="form-select">
+              <option value="">All Time</option>
+              <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+              <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Last 7 Days</option>
+              <option value="month" {% if date_filter == 'month' %}selected{% endif %}>Last 30 Days</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2">
+              <i class="fas fa-search me-1"></i>Filter
+            </button>
+            <a href="{% url 'seller:dashboard' %}" class="btn btn-secondary">
+              <i class="fas fa-redo me-1"></i>Reset
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quick Status Filters -->
+    <div class="mb-3">
+      <div class="btn-group" role="group">
+        <a href="{% url 'seller:dashboard' %}" class="btn btn-outline-secondary {% if not status_filter %}active{% endif %}">
+          All ({{ total_orders }})
+        </a>
+        <a href="{% url 'seller:dashboard' %}?status=New" class="btn btn-outline-primary {% if status_filter == 'New' %}active{% endif %}">
+          New ({{ status_counts.New|default:0 }})
+        </a>
+        <a href="{% url 'seller:dashboard' %}?status=Accepted" class="btn btn-outline-info {% if status_filter == 'Accepted' %}active{% endif %}">
+          Accepted ({{ status_counts.Accepted|default:0 }})
+        </a>
+        <a href="{% url 'seller:dashboard' %}?status=Packed" class="btn btn-outline-warning {% if status_filter == 'Packed' %}active{% endif %}">
+          Packed ({{ status_counts.Packed|default:0 }})
+        </a>
+        <a href="{% url 'seller:dashboard' %}?status=Shipped" class="btn btn-outline-success {% if status_filter == 'Shipped' %}active{% endif %}">
+          Shipped ({{ status_counts.Shipped|default:0 }})
+        </a>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Orders ({{ orders|length }})</h5>
+      </div>
+      <div class="card-body p-0">
+        {% if orders %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td>
+                    <strong>{{ order.order_number }}</strong>
+                    {% if order.tracking_number %}
+                      <br><small class="text-muted">Tracking: {{ order.tracking_number }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div>
+                      <strong>{{ order.full_name }}</strong><br>
+                      <small class="text-muted">{{ order.email }}</small><br>
+                      <small class="text-muted">{{ order.phone }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      {{ order.created_at|date:"M d, Y" }}<br>
+                      <small class="text-muted">{{ order.created_at|date:"g:i A" }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    {% for order_product in order.orderproduct_set.all|slice:":2" %}
+                      <div class="mb-1">
+                        <small>{{ order_product.product.product_name }} (x{{ order_product.quantity }})</small>
+                      </div>
+                    {% endfor %}
+                    {% if order.orderproduct_set.count > 2 %}
+                      <small class="text-muted">+{{ order.orderproduct_set.count|add:"-2" }} more</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong>₹{{ order.final_total|floatformat:2 }}</strong>
+                    {% if order.discount > 0 %}
+                      <br><small class="text-success">Discount: ₹{{ order.discount|floatformat:2 }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <select class="form-select form-select-sm status-select" data-order-number="{{ order.order_number }}" style="min-width: 150px;">
+                      {% for status_code, status_name in status_choices %}
+                        <option value="{{ status_code }}" {% if order.status == status_code %}selected{% endif %}>
+                          {{ status_name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    <div class="status-message mt-1" id="status-msg-{{ order.order_number }}" style="display: none;"></div>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <a href="{% url 'seller:order_detail' order.order_number %}" class="btn btn-outline-primary" title="View Details">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <a href="{% url 'orders:download_invoice' order.order_number %}" class="btn btn-outline-secondary" title="Download Invoice">
+                        <i class="fas fa-download"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+            <h5>No orders found</h5>
+            <p class="text-muted">Try adjusting your filters.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.status-select {
+  cursor: pointer;
+}
+.status-message {
+  font-size: 0.75rem;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+  // Handle status change
+  $('.status-select').on('change', function() {
+    const orderNumber = $(this).data('order-number');
+    const newStatus = $(this).val();
+    const selectElement = $(this);
+    const messageDiv = $('#status-msg-' + orderNumber);
+    
+    // Disable select while updating
+    selectElement.prop('disabled', true);
+    messageDiv.html('<small class="text-info"><i class="fas fa-spinner fa-spin"></i> Updating...</small>').show();
+    
+    // Send AJAX request
+    $.ajax({
+      url: '/seller/update-status/' + orderNumber + '/',
+      method: 'POST',
+      data: {
+        'status': newStatus,
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      success: function(response) {
+        if (response.success) {
+          messageDiv.html('<small class="text-success"><i class="fas fa-check"></i> ' + response.message + '</small>');
+          
+          // Update badge color based on status
+          setTimeout(function() {
+            messageDiv.fadeOut();
+            selectElement.prop('disabled', false);
+          }, 2000);
+          
+          // Show success notification
+          showNotification('success', response.message);
+        } else {
+          messageDiv.html('<small class="text-danger"><i class="fas fa-times"></i> ' + response.message + '</small>');
+          selectElement.prop('disabled', false);
+          showNotification('error', response.message);
+        }
+      },
+      error: function(xhr, status, error) {
+        messageDiv.html('<small class="text-danger"><i class="fas fa-times"></i> Error updating status</small>');
+        selectElement.prop('disabled', false);
+        showNotification('error', 'Error updating order status. Please try again.');
+      }
+    });
+  });
+  
+  // Notification function
+  function showNotification(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    const notification = $('<div class="alert ' + alertClass + ' alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">' +
+      '<i class="fas ' + icon + ' me-2"></i>' + message +
+      '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+      '</div>');
+    
+    $('body').append(notification);
+    
+    setTimeout(function() {
+      notification.fadeOut(function() {
+        $(this).remove();
+      });
+    }, 3000);
+  }
+});
+</script>
+{% endblock %}

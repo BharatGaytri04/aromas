@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+  <div class="container">
+    <div class="row">
+      <main class="col-lg-12">
+        <div class="card">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-shopping-basket me-2"></i>My Orders</h5>
+            <a href="{% url 'store' %}" class="btn btn-outline-light btn-sm">
+              <i class="fas fa-shopping-bag me-1"></i>Continue Shopping
+            </a>
+          </div>
+          <div class="card-body">
+            {% if orders %}
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Order #</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for order in orders %}
+                    <tr>
+                      <td><strong>{{ order.order_number }}</strong></td>
+                      <td>{{ order.created_at|date:"M d, Y g:i A" }}</td>
+                      <td>
+                        {% if order.status == 'Cancelled' %}
+                          <span class="badge badge-danger">{{ order.status }}</span>
+                        {% elif order.status == 'Delivered' or order.status == 'Completed' %}
+                          <span class="badge badge-success">{{ order.status }}</span>
+                        {% elif order.status == 'New' %}
+                          <span class="badge badge-primary">{{ order.status }}</span>
+                        {% else %}
+                          <span class="badge badge-warning text-dark">{{ order.status }}</span>
+                        {% endif %}
+                      </td>
+                      <td>₹{{ order.final_total|floatformat:2 }}</td>
+                      <td>
+                        <a href="{% url 'orders:order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary">
+                          <i class="fas fa-eye me-1"></i>View
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h5>You don't have any orders yet.</h5>
+                <p class="text-muted">Browse our collection and place your first order.</p>
+                <a href="{% url 'store' %}" class="btn btn-primary">
+                  <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

@@ -10,29 +10,52 @@
 <!-- ============================ COMPONENT 1 ================================= -->
 <div class="card">
 	<div class="row no-gutters">
-		<aside class="col-md-6">
-			<article class="gallery-wrap">
-				<div class="img-big-wrap">
-					<a href="{{ product.images.url }}" target="_blank" rel="noopener">
-						<img src="{{ product.images.url }}" class="img-fluid" alt="{{ product.product_name }}">
-					</a>
-				</div>
-			</article>
-		</aside>
+      <aside class="col-md-6">
+        <article class="gallery-wrap">
+          <div class="img-big-wrap">
+            <a href="{{ product.images.url }}" target="_blank" rel="noopener">
+              <img src="{{ product.images.url }}" class="img-fluid" alt="{{ product.product_name }}">
+            </a>
+          </div>
+          {% if product.product_images.all %}
+          <div class="thumbs-wrap mt-3">
+            {% for image in product.product_images.all %}
+            <a href="{{ image.image.url }}" class="item-thumb" target="_blank">
+              <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.product_name }}">
+            </a>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </article>
+      </aside>
 		<main class="col-md-6 border-left">
 			<article class="content-body">
 
 				<h2 class="title">{{ product.product_name }}</h2>
 
 				<div class="rating-wrap my-3">
+					{% if avg_rating %}
 					<ul class="rating-stars">
-						<li style="width:80%" class="stars-active">
+						<li style="width:{% widthratio avg_rating 5 100 %}%" class="stars-active">
 							<i class="fa fa-star"></i> <i class="fa fa-star"></i>
 							<i class="fa fa-star"></i> <i class="fa fa-star"></i>
 							<i class="fa fa-star"></i>
 						</li>
 					</ul>
-					<small class="label-rating text-muted">132 reviews</small>
+					<small class="label-rating text-muted">
+						<strong>{{ avg_rating|floatformat:1 }}</strong> 
+						({{ review_count }} review{{ review_count|pluralize }})
+					</small>
+					{% else %}
+					<ul class="rating-stars">
+						<li style="width:0%" class="stars-active">
+							<i class="fa fa-star"></i> <i class="fa fa-star"></i>
+							<i class="fa fa-star"></i> <i class="fa fa-star"></i>
+							<i class="fa fa-star"></i>
+						</li>
+					</ul>
+					<small class="label-rating text-muted">No reviews yet</small>
+					{% endif %}
 				</div>
 
 				<div class="mb-3">
@@ -130,39 +153,112 @@
 <div class="row">
 	<div class="col-md-9">
 		<header class="section-heading">
-			<h3>Customer Reviews </h3>  
-			<p class="text-muted small">Handpicked testimonials from candle lovers</p>
+			<h3>Customer Reviews</h3>  
+			<p class="text-muted small">{{ review_count }} review{{ review_count|pluralize }} from verified customers</p>
 		</header>
 
-		<article class="box mb-3">
-			<div class="icontext w-100">
-				<img src="{% static 'images/avatars/avatar1.jpg' %}" class="img-xs icon rounded-circle" alt="Reviewer">
-				<div class="text">
-					<span class="date text-muted float-md-right">24.04.2024 </span>  
-					<h6 class="mb-1">Mike John </h6>
+		<!-- Write Review Section (Only for authenticated users who purchased) -->
+		{% if user.is_authenticated %}
+			{% if user_can_review %}
+				<div class="box mb-4">
+					<h5 class="mb-3">
+						{% if user_has_reviewed %}
+							<i class="fas fa-edit me-2"></i>Update Your Review
+						{% else %}
+							<i class="fas fa-star me-2"></i>Write a Review
+						{% endif %}
+					</h5>
+					<form id="reviewForm" method="POST" action="{% url 'reviews:submit_review_ajax' product.id %}">
+						{% csrf_token %}
+						<div class="mb-3">
+							<label class="form-label">Your Rating <span class="text-danger">*</span></label>
+							<div class="star-rating">
+								<input type="radio" name="rating" id="star5" value="5" required>
+								<label for="star5" class="star-label"><i class="fa fa-star"></i></label>
+								<input type="radio" name="rating" id="star4" value="4" required>
+								<label for="star4" class="star-label"><i class="fa fa-star"></i></label>
+								<input type="radio" name="rating" id="star3" value="3" required>
+								<label for="star3" class="star-label"><i class="fa fa-star"></i></label>
+								<input type="radio" name="rating" id="star2" value="2" required>
+								<label for="star2" class="star-label"><i class="fa fa-star"></i></label>
+								<input type="radio" name="rating" id="star1" value="1" required>
+								<label for="star1" class="star-label"><i class="fa fa-star"></i></label>
+							</div>
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Your Review (Optional)</label>
+							<textarea name="review_text" class="form-control" rows="4" placeholder="Share your experience with this product..." maxlength="1000"></textarea>
+							<small class="text-muted">Maximum 1000 characters</small>
+						</div>
+						<button type="submit" class="btn btn-primary">
+							<i class="fas fa-paper-plane me-2"></i>Submit Review
+						</button>
+					</form>
 				</div>
+			{% else %}
+				<div class="alert alert-info">
+					<i class="fas fa-info-circle me-2"></i>
+					You can review this product after purchasing it.
+				</div>
+			{% endif %}
+		{% else %}
+			<div class="alert alert-warning">
+				<i class="fas fa-sign-in-alt me-2"></i>
+				<a href="{% url 'accounts:login' %}?next={{ request.path }}">Login</a> to write a review. 
+				You can only review products you have purchased.
 			</div>
-			<div class="mt-3">
-				<p>
-					“Beautiful scent and packaging. The throw fills my living room without being overpowering.”
-				</p>	
-			</div>
-		</article>
+		{% endif %}
 
-		<article class="box mb-3">
-			<div class="icontext w-100">
-				<img src="{% static 'images/avatars/avatar2.jpg' %}" class="img-xs icon rounded-circle" alt="Reviewer">
-				<div class="text">
-					<span class="date text-muted float-md-right">11.03.2024 </span>  
-					<h6 class="mb-1">Harper Lee </h6>
+		<!-- Display Reviews -->
+		{% if reviews %}
+			{% for review in reviews %}
+			<article class="box mb-3">
+				<div class="icontext w-100">
+					<div class="img-xs icon rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden" style="width: 50px; height: 50px; background: #f8f9fa;">
+						{% if review.user.profile_image %}
+							<img src="{{ review.user.profile_image.url }}" alt="{{ review.user.get_display_name }}" class="img-fluid" style="width: 50px; height: 50px; object-fit: cover;">
+						{% else %}
+							<span class="bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%; font-size: 18px;">
+								{{ review.user.get_display_name|first|default:"C"|upper }}
+							</span>
+						{% endif %}
+					</div>
+					<div class="text ms-3">
+						<span class="date text-muted float-md-right">{{ review.created_at|date:"M d, Y" }}</span>  
+						<h6 class="mb-1">{{ review.user.get_display_name|default:"Customer" }}</h6>
+						<div class="rating-stars mb-1">
+							{% for i in "12345" %}
+								{% if forloop.counter <= review.rating %}
+									<i class="fa fa-star text-warning"></i>
+								{% else %}
+									<i class="fa fa-star-o text-muted"></i>
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
 				</div>
+				{% if review.review_text %}
+				<div class="mt-3">
+					<p class="mb-0">{{ review.review_text }}</p>	
+				</div>
+				{% endif %}
+				{% if review.user == user %}
+				<div class="mt-2">
+					<a href="{% url 'reviews:delete_review' review.id %}" class="text-danger small" onclick="return confirm('Are you sure you want to delete your review?');">
+						<i class="fas fa-trash me-1"></i>Delete Review
+					</a>
+				</div>
+				{% endif %}
+			</article>
+			{% endfor %}
+		{% else %}
+			<div class="box mb-3">
+				<p class="text-muted text-center py-4">
+					<i class="fas fa-comment-slash fa-2x mb-3 d-block"></i>
+					No reviews yet. Be the first to review this product!
+				</p>
 			</div>
-			<div class="mt-3">
-				<p>
-					“The candle burns evenly and lasts longer than most luxury brands I’ve tried. Definitely repurchasing.”
-				</p>	
-			</div>
-		</article>
+		{% endif %}
 
 	</div> <!-- col.// -->
 </div> <!-- row.// -->
@@ -171,5 +267,88 @@
 </div> <!-- container .//  -->
 </section>
 <!-- ========================= SECTION CONTENT END// ========================= -->
+
+<style>
+/* Star Rating Styles */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star-rating label {
+    cursor: pointer;
+    font-size: 24px;
+    color: #ddd;
+    transition: color 0.2s;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+.star-rating input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Handle review form submission via AJAX
+    $('#reviewForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var form = $(this);
+        var formData = form.serialize();
+        var submitBtn = form.find('button[type="submit"]');
+        var originalText = submitBtn.html();
+        
+        // Disable submit button
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Submitting...');
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    alert(response.message);
+                    // Reload page to show updated reviews
+                    location.reload();
+                } else {
+                    alert(response.message);
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                var errorMsg = 'An error occurred. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                alert(errorMsg);
+                submitBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    // Pre-select rating if user has existing review
+    {% if user_review %}
+        var userReviewRating = {{ user_review.rating }};
+        if (userReviewRating > 0) {
+            $('#star' + userReviewRating).prop('checked', true);
+        }
+        // Pre-fill review text
+        $('textarea[name="review_text"]').val('{{ user_review.review_text|escapejs }}');
+    {% endif %}
+});
+</script>
 
 {% endblock %}

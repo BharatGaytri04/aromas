@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y">
+  <div class="container" style="max-width: 600px;">
+    <div class="card shadow-sm">
+      <div class="card-body text-center">
+        {% if success %}
+          <div class="mb-4">
+            <i class="fas fa-check-circle fa-4x text-success"></i>
+          </div>
+          <h3 class="card-title mb-3 text-success">Email Verified Successfully!</h3>
+          <p class="text-muted mb-4">{{ message }}</p>
+          {% if already_verified %}
+            <a href="{% url 'accounts:login' %}" class="btn btn-dark btn-block py-2">
+              <i class="fas fa-sign-in-alt me-2"></i>Go to Login
+            </a>
+          {% else %}
+            <div class="d-grid gap-2">
+              <a href="{% url 'accounts:login' %}" class="btn btn-dark btn-lg py-2">
+                <i class="fas fa-sign-in-alt me-2"></i>Continue to Login
+              </a>
+              <a href="{% url 'store' %}" class="btn btn-outline-secondary py-2">
+                <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+              </a>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="mb-4">
+            <i class="fas fa-exclamation-circle fa-4x text-danger"></i>
+          </div>
+          <h3 class="card-title mb-3 text-danger">Verification Failed</h3>
+          <p class="text-muted mb-4">{{ message }}</p>
+          <div class="d-grid gap-2">
+            <a href="{% url 'accounts:register' %}" class="btn btn-dark btn-lg py-2">
+              <i class="fas fa-user-plus me-2"></i>Register Again
+            </a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary py-2">
+              <i class="fas fa-sign-in-alt me-2"></i>Go to Login
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    {% if success and not already_verified %}
+    <div class="card mt-3 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">What's Next?</h5>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Your account is now active</li>
+          <li class="mb-2"><i class="fas fa-check text-success me-2"></i>You can log in with your email and password</li>
+          <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Start shopping for your favorite aromas!</li>
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
