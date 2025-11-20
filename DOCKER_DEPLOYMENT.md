@@ -80,7 +80,7 @@ EMAIL_HOST_PASSWORD=your-gmail-app-password
 DEFAULT_FROM_EMAIL=aromasbyharnoor@gmail.com
 
 # Domain Configuration
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com,server-ip-address
+ALLOWED_HOSTS=aromasbyharnoor.com,www.aromasbyharnoor.com,server-ip-address
 ADMIN_URL=secure-admin/
 
 # Optional: Razorpay (if enabled)
@@ -92,7 +92,7 @@ RAZORPAY_KEY_SECRET=
 **Important:**
 - Generate a strong SECRET_KEY: `python -c "import secrets; print(secrets.token_urlsafe(50))"`
 - Use Gmail App Password (not regular password) for EMAIL_HOST_PASSWORD
-- Replace `yourdomain.com` with your actual domain
+- Domain is configured as `aromasbyharnoor.com` (update if needed)
 - Use a strong database password
 
 ## Step 4: Update Docker Compose for Production
@@ -131,20 +131,69 @@ docker-compose exec web python manage.py createsuperuser
 docker-compose exec web python manage.py collectstatic --noinput
 ```
 
-## Step 7: Configure Nginx (Optional - for custom domain)
+## Step 7: Configure DNS for Your Domain
 
-If you have a domain name, update `nginx.conf`:
+Before your domain works, you need to configure DNS records:
 
-1. Uncomment the HTTPS server block
-2. Update `server_name` with your domain
-3. Add SSL certificates to `./ssl/` directory
+### DNS Configuration at Your Domain Registrar
+
+1. **A Record** (for `aromasbyharnoor.com`):
+   - Type: `A`
+   - Name: `@` or `aromasbyharnoor.com`
+   - Value: Your server's IP address
+   - TTL: 3600 (or default)
+
+2. **A Record** (for `www.aromasbyharnoor.com`):
+   - Type: `A`
+   - Name: `www`
+   - Value: Your server's IP address
+   - TTL: 3600 (or default)
+
+3. **Wait for DNS propagation** (can take 24-48 hours, usually faster)
+
+### Verify DNS is Working
+
+```bash
+# Check if DNS is pointing to your server
+nslookup aromasbyharnoor.com
+ping aromasbyharnoor.com
+```
+
+## Step 8: Configure Nginx for Your Domain
+
+The nginx configuration is already set for `aromasbyharnoor.com`. To enable HTTPS:
+
+1. Uncomment the HTTPS server block in `nginx.conf`
+2. The `server_name` is already set to `aromasbyharnoor.com www.aromasbyharnoor.com`
+3. Add SSL certificates to `./ssl/` directory (use Let's Encrypt/Certbot)
 4. Restart nginx: `docker-compose restart nginx`
 
-## Step 8: Access Your Application
+### Setting up SSL with Let's Encrypt (Recommended)
 
-- **Website:** http://your-server-ip:8000
-- **Admin Panel:** http://your-server-ip:8000/secure-admin/
-- **Seller Dashboard:** http://your-server-ip:8000/seller/dashboard/
+```bash
+# Install certbot
+sudo apt-get update
+sudo apt-get install certbot
+
+# Generate SSL certificate
+sudo certbot certonly --standalone -d aromasbyharnoor.com -d www.aromasbyharnoor.com
+
+# Copy certificates to your project
+sudo mkdir -p ./ssl
+sudo cp /etc/letsencrypt/live/aromasbyharnoor.com/fullchain.pem ./ssl/cert.pem
+sudo cp /etc/letsencrypt/live/aromasbyharnoor.com/privkey.pem ./ssl/key.pem
+sudo chown $USER:$USER ./ssl/*.pem
+
+# Uncomment HTTPS server block in nginx.conf
+# Restart nginx
+docker-compose restart nginx
+```
+
+## Step 9: Access Your Application
+
+- **Website:** http://aromasbyharnoor.com (or http://your-server-ip:8000)
+- **Admin Panel:** http://aromasbyharnoor.com/secure-admin/
+- **Seller Dashboard:** http://aromasbyharnoor.com/seller/dashboard/
 
 ## Common Docker Commands
 

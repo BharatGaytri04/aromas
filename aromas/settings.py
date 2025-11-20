@@ -34,7 +34,7 @@ DEBUG = env_bool('DEBUG', True)
 
 # ALLOWED_HOSTS configuration
 # For development: use ['*'] or ['localhost', '127.0.0.1']
-# For production: use ['treandy.in', 'www.treandy.in']
+# For production: use ['aromasbyharnoor.com', 'www.aromasbyharnoor.com']
 allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '*')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()] or ['*']
 ADMIN_URL = os.environ.get('ADMIN_URL', 'secure-admin/')

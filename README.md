@@ -63,7 +63,7 @@ A full-featured e-commerce platform built with Django.
    DEFAULT_FROM_EMAIL=your-email@gmail.com
    
    # Domain
-   ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+   ALLOWED_HOSTS=aromasbyharnoor.com,www.aromasbyharnoor.com
    ADMIN_URL=secure-admin/
    ```
 
