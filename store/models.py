@@ -22,6 +22,12 @@ class Product(models.Model):
     flash_sale_start = models.DateTimeField(null=True, blank=True)
     flash_sale_end = models.DateTimeField(null=True, blank=True)
     min_stock_alert = models.IntegerField(default=10, help_text="Alert when stock falls below this")
+    gst_percentage = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=2.00, 
+        help_text="GST percentage for this product (e.g., 2.00 for 2%, 5.00 for 5%, 18.00 for 18%)"
+    )
 
     def get_url(self):
         return reverse('product_detail', args=[self.category.slug, self.slug])

@@ -129,10 +129,13 @@ def cart(request):
         grand_total = 0
         
         for cart_item in cart_items:
-            total += (cart_item.product.price * cart_item.quantity)
+            item_total = cart_item.product.price * cart_item.quantity
+            total += item_total
             quantity += cart_item.quantity
+            # Calculate tax based on product-specific GST percentage
+            gst_percentage = float(cart_item.product.gst_percentage)
+            tax += (item_total * gst_percentage) / 100
         
-        tax = (2 * total) / 100  # 2% tax
         grand_total = total + tax
         
         # Show message if items were removed
@@ -218,10 +221,13 @@ def checkout(request):
         grand_total = 0
         
         for cart_item in cart_items:
-            total += (cart_item.product.price * cart_item.quantity)
+            item_total = cart_item.product.price * cart_item.quantity
+            total += item_total
             quantity += cart_item.quantity
+            # Calculate tax based on product-specific GST percentage
+            gst_percentage = float(cart_item.product.gst_percentage)
+            tax += (item_total * gst_percentage) / 100
         
-        tax = (2 * total) / 100  # 2% tax
         grand_total = total + tax
         
     except Cart.DoesNotExist:

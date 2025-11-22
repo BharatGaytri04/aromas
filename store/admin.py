@@ -15,12 +15,12 @@ class ProductImageInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('product_name', 'price', 'sale_price', 'stock', 'category', 'is_available', 
+    list_display = ('product_name', 'price', 'sale_price', 'gst_percentage', 'stock', 'category', 'is_available', 
                    'is_featured', 'is_flash_sale', 'modified_date')
     prepopulated_fields = {'slug': ('product_name',)}
     list_filter = ('is_available', 'is_featured', 'is_flash_sale', 'category', 'created_date')
     search_fields = ('product_name', 'description')
-    list_editable = ('is_available', 'is_featured', 'is_flash_sale')
+    list_editable = ('is_available', 'is_featured', 'is_flash_sale', 'gst_percentage')
     inlines = [ProductImageInline]
     readonly_fields = ('created_date', 'modified_date')
     
@@ -29,7 +29,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('product_name', 'slug', 'description', 'category')
         }),
         ('Pricing', {
-            'fields': ('price', 'sale_price')
+            'fields': ('price', 'sale_price', 'gst_percentage')
         }),
         ('Inventory', {
             'fields': ('stock', 'min_stock_alert', 'is_available')
