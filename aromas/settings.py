@@ -174,7 +174,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
 STATICFILES_DIRS = [
-    r'aromas\static',
+    BASE_DIR / 'aromas' / 'static',
 ]
 
 # WhiteNoise configuration for serving static files in production
