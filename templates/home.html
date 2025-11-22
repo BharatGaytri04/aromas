@@ -22,7 +22,18 @@
 		</div>
 		<div class="col-lg-6 col-md-12">
 			<div class="hero-banner-wrap">
-				<img src="{% static 'images/banners/1.jpg' %}" class="hero-banner-img" alt="Aromas by HarNoor">
+				{% if banner %}
+					{% if banner.link_url %}
+						<a href="{{ banner.link_url }}" {% if banner.link_text %}title="{{ banner.link_text }}"{% endif %}>
+							<img src="{{ banner.image.url }}" class="hero-banner-img" alt="{{ banner.alt_text|default:'Aromas by HarNoor' }}">
+						</a>
+					{% else %}
+						<img src="{{ banner.image.url }}" class="hero-banner-img" alt="{{ banner.alt_text|default:'Aromas by HarNoor' }}">
+					{% endif %}
+				{% else %}
+					{# Fallback to static image if no banner in database #}
+					<img src="{% static 'images/banners/1.jpg' %}" class="hero-banner-img" alt="Aromas by HarNoor">
+				{% endif %}
 			</div>
 		</div>
 	</div>

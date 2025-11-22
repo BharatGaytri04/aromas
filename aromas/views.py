@@ -4,15 +4,20 @@ from django.http import FileResponse, Http404
 from django.conf import settings
 import os
 
-from store.models import Product
+from store.models import Product, Banner
 
 
 def home(request):
     products = Product.objects.all().filter(is_available=True)
     print(products)  # debugging purpose for products
     print("products fetched successfully")  # debugging purpose for products
+    
+    # Get active banner from database
+    banner = Banner.get_active_banner()
+    
     context = {
         'products': products,
+        'banner': banner,
     }
     return render(request, 'home.html', context)
 

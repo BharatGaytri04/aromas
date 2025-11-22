@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from .models import Product, Variation, ProductImage, Pincode
+from .models import Product, Variation, ProductImage, Pincode, Banner
 
 
 class ProductImageInline(admin.TabularInline):
@@ -64,7 +64,39 @@ class PincodeAdmin(admin.ModelAdmin):
     list_editable = ('is_serviceable', 'cod_available', 'delivery_days')
 
 
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('title', 'image_preview', 'is_active', 'order', 'created_at')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('title', 'alt_text')
+    list_editable = ('is_active', 'order')
+    readonly_fields = ('image_preview', 'created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Banner Information', {
+            'fields': ('title', 'image', 'image_preview', 'alt_text')
+        }),
+        ('Link Settings (Optional)', {
+            'fields': ('link_url', 'link_text'),
+            'description': 'If provided, banner will be clickable and link to the specified URL'
+        }),
+        ('Display Settings', {
+            'fields': ('is_active', 'order')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="300" height="75" style="object-fit: cover; border-radius: 6px; border: 1px solid #ddd;" />')
+        return "No Image"
+    image_preview.short_description = 'Preview'
+
+
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Variation, VariationAdmin)
 admin.site.register(ProductImage, ProductImageAdmin)
 admin.site.register(Pincode, PincodeAdmin)
+admin.site.register(Banner, BannerAdmin)

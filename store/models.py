@@ -171,3 +171,37 @@ class Variation(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name} - {self.variation_value}"
+
+
+class Banner(models.Model):
+    """Homepage banner that can be managed by superuser"""
+    title = models.CharField(max_length=200, help_text="Banner title (optional)")
+    image = models.ImageField(upload_to='photos/banners', help_text="Recommended size: 1200x300px")
+    alt_text = models.CharField(max_length=200, blank=True, help_text="Alt text for image")
+    is_active = models.BooleanField(default=True, help_text="Only one active banner will be displayed")
+    link_url = models.URLField(blank=True, null=True, help_text="Optional: URL to link when banner is clicked")
+    link_text = models.CharField(max_length=100, blank=True, help_text="Optional: Text for the link button")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    order = models.IntegerField(default=0, help_text="Display order (lower numbers appear first)")
+    
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = 'Banner'
+        verbose_name_plural = 'Banners'
+    
+    def __str__(self):
+        return self.title or f"Banner {self.id}"
+    
+    def image_preview(self):
+        """Return HTML preview for admin"""
+        if self.image:
+            return f'<img src="{self.image.url}" width="200" height="50" style="object-fit: cover; border-radius: 6px;" />'
+        return "No Image"
+    image_preview.short_description = 'Preview'
+    image_preview.allow_tags = True
+    
+    @classmethod
+    def get_active_banner(cls):
+        """Get the first active banner"""
+        return cls.objects.filter(is_active=True).first()
