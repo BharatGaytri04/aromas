@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import RedirectView
 
 from django.conf import settings
@@ -45,4 +45,12 @@ urlpatterns = [
     path('cancellation-policy/', views.cancellation_policy, name='cancellation_policy'),
     # Redirect old cart.html to new cart URL
     path('cart.html', RedirectView.as_view(url='/cart/', permanent=True)),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # Secure media serving - serves media files through Django to hide file paths
+    re_path(r'^media/(?P<path>.*)$', views.secure_media, name='secure_media'),
+]
+
+# Only serve media files directly in development (DEBUG mode)
+# In production, media files are served through the secure_media view above
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
