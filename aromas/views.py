@@ -77,8 +77,19 @@ def secure_media(request, path):
     if not os.path.exists(file_path):
         raise Http404("File not found")
     
-    # Serve the file
+    # Determine content type based on file extension
+    import mimetypes
+    content_type, _ = mimetypes.guess_type(file_path)
+    if content_type is None:
+        # Default to octet-stream if type cannot be determined
+        content_type = 'application/octet-stream'
+    
+    # Serve the file with proper content type
     try:
-        return FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+        response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+        # Add cache headers for images
+        if content_type.startswith('image/'):
+            response['Cache-Control'] = 'public, max-age=31536000'  # 1 year cache for images
+        return response
     except IOError:
         raise Http404("File not found")
