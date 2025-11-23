@@ -30,6 +30,10 @@ def env_bool(name, default=False):
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-placeholder-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG mode control:
+# - Set DEBUG=True in .env for local development (http://127.0.0.1:8000)
+# - Set DEBUG=False in .env for production (aromasbyharnoor.com)
+# - Default: True (for safety during development)
 DEBUG = env_bool('DEBUG', True)
 
 # ALLOWED_HOSTS configuration
