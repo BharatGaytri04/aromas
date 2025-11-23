@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="section-content padding-y">
+  <div class="container">
+    <h2 class="mb-3">Contact Us</h2>
+    <p class="text-muted">We'd love to hear from you! Get in touch with us through any of the following ways.</p>
+
+    <div class="row mt-4">
+      <div class="col-md-6 mb-4">
+        <h4>Get in Touch</h4>
+        <p>Have a question, feedback, or need assistance? We're here to help!</p>
+        
+        <div class="contact-info mt-4">
+          <div class="mb-3">
+            <h5><i class="fa fa-envelope mr-2"></i> Email</h5>
+            <p class="mb-0">
+              <a href="mailto:aromasbyharnoor@gmail.com">aromasbyharnoor@gmail.com</a>
+            </p>
+          </div>
+          
+          <div class="mb-3">
+            <h5><i class="fa fa-phone mr-2"></i> Phone</h5>
+            <p class="mb-1">
+              <a href="tel:+918427827341">+91 84278 27341</a>
+            </p>
+            <p class="mb-0 text-muted">
+              Alternative: <a href="tel:+917696783432">+91 76967 83432</a>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6 mb-4">
+        <h4>Business Hours</h4>
+        <p class="text-muted">We typically respond within 24-48 hours.</p>
+        <ul class="list-unstyled">
+          <li><strong>Monday - Saturday:</strong> 9:00 AM - 7:00 PM IST</li>
+          <li><strong>Sunday:</strong> Closed</li>
+        </ul>
+        
+        <div class="mt-4">
+          <h5>Follow Us</h5>
+          <p class="text-muted">Stay connected with us on social media for updates, new products, and special offers.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <h4>Frequently Asked Questions</h4>
+        <p class="text-muted">Before contacting us, you might find answers to common questions in our policies:</p>
+        <ul>
+          <li><a href="{% url 'shipping_policy' %}">Shipping Information</a></li>
+          <li><a href="{% url 'returns_policy' %}">Returns & Refunds</a></li>
+          <li><a href="{% url 'cancellation_policy' %}">Order Cancellation</a></li>
+          <li><a href="{% url 'terms_conditions' %}">Terms & Conditions</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="alert alert-info">
+          <h5><i class="fa fa-info-circle mr-2"></i> Note</h5>
+          <p class="mb-0">
+            For order-related inquiries, please include your order number in your message for faster assistance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

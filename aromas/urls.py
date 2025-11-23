@@ -43,6 +43,7 @@ urlpatterns = [
     path('shipping-policy/', views.shipping_policy, name='shipping_policy'),
     path('disclaimer/', views.disclaimer_policy, name='disclaimer_policy'),
     path('cancellation-policy/', views.cancellation_policy, name='cancellation_policy'),
+    path('contact-us/', views.contact_us, name='contact_us'),
     # Redirect old cart.html to new cart URL
     path('cart.html', RedirectView.as_view(url='/cart/', permanent=True)),
     

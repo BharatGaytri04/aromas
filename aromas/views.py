@@ -52,6 +52,10 @@ def cancellation_policy(request):
     return render(request, 'policies/cancellation_policy.html', _policy_context())
 
 
+def contact_us(request):
+    return render(request, 'policies/contact_us.html', _policy_context())
+
+
 def secure_media(request, path):
     """
     Serve media files securely through Django.

@@ -11,11 +11,13 @@
 			<div class="col-md-4 mb-3 mb-md-0">
 				<p class="text-muted mb-2">&copy; {% now "Y" %} Aromas by HarNoor</p>
 				<p class="mb-1">Email: <a href="mailto:aromasbyharnoor@gmail.com">aromasbyharnoor@gmail.com</a></p>
-				<p class="mb-0">Phone: +91 84278 27341</p>
+				<p class="mb-1">Phone: <a href="tel:+918427827341">+91 84278 27341</a></p>
+				<p class="mb-0">Alt: <a href="tel:+917696783432">+91 76967 83432</a></p>
 			</div>
 			<div class="col-md-4 mb-3 mb-md-0">
 				<h6 class="text-uppercase text-muted">Policies</h6>
 				<ul class="list-unstyled mb-0">
+					<li><a href="{% url 'contact_us' %}">Contact Us</a></li>
 					<li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
 					<li><a href="{% url 'returns_policy' %}">Return &amp; Refund</a></li>
 					<li><a href="{% url 'shipping_policy' %}">Shipping Policy</a></li>
