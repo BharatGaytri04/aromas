@@ -157,22 +157,18 @@
     </table>
 
     <div class="total-section">
+        {% if order.discount > 0 %}
         <div class="total-row">
             <span>Subtotal:</span>
             <span>₹{{ order.order_total|floatformat:2 }}</span>
         </div>
-        {% if order.discount > 0 %}
         <div class="total-row">
             <span>Discount:</span>
             <span>-₹{{ order.discount|floatformat:2 }}</span>
         </div>
         {% endif %}
-        <div class="total-row">
-            <span>Tax (2%):</span>
-            <span>₹{{ order.tax|floatformat:2 }}</span>
-        </div>
         <div class="total-row final">
-            <span>Total:</span>
+            <span>Total (GST included):</span>
             <span>₹{{ order.final_total|floatformat:2 }}</span>
         </div>
     </div>

@@ -132,11 +132,9 @@ def cart(request):
             item_total = cart_item.product.price * cart_item.quantity
             total += item_total
             quantity += cart_item.quantity
-            # Calculate tax based on product-specific GST percentage
-            gst_percentage = float(cart_item.product.gst_percentage)
-            tax += (item_total * gst_percentage) / 100
+            # GST is already included in product price
         
-        grand_total = total + tax
+        grand_total = total
         
         # Show message if items were removed
         if items_to_remove:
@@ -224,11 +222,9 @@ def checkout(request):
             item_total = cart_item.product.price * cart_item.quantity
             total += item_total
             quantity += cart_item.quantity
-            # Calculate tax based on product-specific GST percentage
-            gst_percentage = float(cart_item.product.gst_percentage)
-            tax += (item_total * gst_percentage) / 100
+            # GST is already included in product price
         
-        grand_total = total + tax
+        grand_total = total
         
     except Cart.DoesNotExist:
         messages.warning(request, 'Your cart is empty. Please add items to your cart before checkout.')
@@ -283,8 +279,8 @@ def checkout(request):
                 except:
                     pass
             
-            # Recalculate with discount (Subtotal - Discount + Tax)
-            final_total = total - discount + tax
+            # Recalculate with discount (Subtotal - Discount, GST already included)
+            final_total = total - discount
             
             # ============================================================
             # STEP 6: A Payment Record is Created
@@ -340,7 +336,7 @@ def checkout(request):
                 pincode=pincode,
                 order_note=form.cleaned_data.get('order_note', ''),
                 order_total=total,
-                tax=tax,
+                tax=0,  # GST is already included in product prices
                 discount=discount,
                 final_total=final_total,
                 status='New',

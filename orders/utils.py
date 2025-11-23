@@ -118,16 +118,14 @@ def create_order_from_cart(user, cart_items, form_data, payment_method='COD', di
             error_msg += f"- {item['product']}: Available {item['available']}, Requested {item['requested']}\n"
         return None, error_msg
     
-    # Calculate totals with product-specific GST
+    # Calculate totals (GST already included in product prices)
     total = 0
     tax = 0
     for cart_item in cart_items:
         item_total = cart_item.product.price * cart_item.quantity
         total += item_total
-        # Calculate tax based on product-specific GST percentage
-        gst_percentage = float(cart_item.product.gst_percentage)
-        tax += (item_total * gst_percentage) / 100
-    final_total = total - discount + tax
+        # GST is already included in product price
+    final_total = total - discount
     
     # Create payment
     payment = Payment.objects.create(
@@ -158,7 +156,7 @@ def create_order_from_cart(user, cart_items, form_data, payment_method='COD', di
         pincode=form_data.get('pincode', ''),
         order_note=form_data.get('order_note', ''),
         order_total=total,
-        tax=tax,
+        tax=0,  # GST is already included in product prices
         discount=discount,
         final_total=final_total,
         status='New',

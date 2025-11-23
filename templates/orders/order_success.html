@@ -21,12 +21,11 @@
 					<h5 class="mb-3"><i class="fas fa-receipt me-2"></i>Order Details</h5>
 					<p class="mb-2"><strong>Order Number:</strong> <span class="badge badge-primary">{{ order.order_number }}</span></p>
 					<p class="mb-2"><strong>Order Date:</strong> {{ order.created_at|date:"F d, Y g:i A" }}</p>
-					<p class="mb-2"><strong>Subtotal:</strong> ₹{{ order.order_total|floatformat:2 }}</p>
 					{% if order.discount > 0 %}
+					<p class="mb-2"><strong>Subtotal:</strong> ₹{{ order.order_total|floatformat:2 }}</p>
 					<p class="mb-2"><strong>Discount:</strong> -₹{{ order.discount|floatformat:2 }}</p>
 					{% endif %}
-					<p class="mb-2"><strong>Tax:</strong> ₹{{ order.tax|floatformat:2 }}</p>
-					<p class="mb-2"><strong class="h5">Total Amount:</strong> <span class="h5 text-primary">₹{{ order.final_total|floatformat:2 }}</span></p>
+					<p class="mb-2"><strong class="h5">Total Amount (GST included):</strong> <span class="h5 text-primary">₹{{ order.final_total|floatformat:2 }}</span></p>
 					<p class="mb-0"><strong>Payment Method:</strong> {{ order.payment.get_payment_method_display }}</p>
 				</div>
 				
