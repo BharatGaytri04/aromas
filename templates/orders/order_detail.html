@@ -86,7 +86,11 @@
             {% for item in order_products %}
             <div class="d-flex mb-3 pb-3 border-bottom">
               <div class="flex-shrink-0">
-                <img src="{{ item.product.images.url }}" alt="{{ item.product.product_name }}" class="img-sm rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                {% if item.product.images %}
+                    <img src="{{ item.product.images.url }}" alt="{{ item.product.product_name }}" class="img-sm rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'images/placeholder.jpg' %}" alt="{{ item.product.product_name }}" class="img-sm rounded" style="width: 80px; height: 80px; object-fit: cover;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\'%3E%3Crect fill=\'%23f0f0f0\' width=\'80\' height=\'80\'/%3E%3Ctext fill=\'%23999\' font-family=\'sans-serif\' font-size=\'10\' dy=\'10.5\' font-weight=\'bold\' x=\'50%25\' y=\'50%25\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E';">
+                {% endif %}
               </div>
               <div class="flex-grow-1 ms-3">
                 <h6 class="mb-1">{{ item.product.product_name }}</h6>
