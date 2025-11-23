@@ -48,7 +48,7 @@
                   {% if user.profile_image %}
                     <img src="{{ user.profile_image.url }}" alt="Profile Picture" class="img-fluid rounded-circle border" style="width: 140px; height: 140px; object-fit: cover;">
                   {% else %}
-                    <img src="{% static 'images/avatars/avatar1.jpg' %}" alt="Default Profile" class="img-fluid rounded-circle border" style="width: 140px; height: 140px; object-fit: cover;">
+                    <img src="{% static 'images/avatars/avtar.png' %}" alt="Default Profile" class="img-fluid rounded-circle border" style="width: 140px; height: 140px; object-fit: cover;">
                   {% endif %}
                 </div>
                 <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary btn-sm">
