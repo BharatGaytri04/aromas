@@ -28,8 +28,12 @@
 							<td>
 								<figure class="itemside align-items-center">
 									<div class="aside">
-										{% if cart_item.product.images %}
+										{% if cart_item.product.images and cart_item.product.images.name %}
 											<img src="{{ cart_item.product.images.url }}" class="img-sm" alt="{{ cart_item.product.product_name }}">
+										{% elif cart_item.product.product_images.all %}
+											{% with first_image=cart_item.product.product_images.all|first %}
+												<img src="{{ first_image.image.url }}" class="img-sm" alt="{{ cart_item.product.product_name }}">
+											{% endwith %}
 										{% else %}
 											<img src="{% static 'images/placeholder.jpg' %}" class="img-sm" alt="{{ cart_item.product.product_name }}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23f0f0f0\' width=\'100\' height=\'100\'/%3E%3Ctext fill=\'%23999\' font-family=\'sans-serif\' font-size=\'12\' dy=\'10.5\' font-weight=\'bold\' x=\'50%25\' y=\'50%25\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E';">
 										{% endif %}
