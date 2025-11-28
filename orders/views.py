@@ -140,14 +140,41 @@ def create_razorpay_payment(request, order_number):
         # Create Razorpay order
         try:
             razorpay_order = create_razorpay_order(order)
+        except ValueError as e:
+            # Configuration or validation errors
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Razorpay configuration error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Payment configuration error: {str(e)}. Please contact support.'
+            })
+        except ConnectionError as e:
+            # Network or API connectivity errors
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Razorpay connection error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Unable to connect to payment gateway: {str(e)}. Please check your internet connection and try again.'
+            })
+        except ImportError as e:
+            # Missing package
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Razorpay package error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Payment system is not properly configured. Please contact support.'
+            })
         except Exception as e:
             # Log the actual error for debugging
             import logging
             logger = logging.getLogger(__name__)
-            logger.error(f"Razorpay order creation failed: {str(e)}")
+            logger.error(f"Razorpay order creation failed: {type(e).__name__}: {str(e)}")
             return JsonResponse({
                 'success': False,
-                'message': f'Payment initialization failed: {str(e)}. Please try again.'
+                'message': f'Payment initialization failed: {str(e)}. Please try again or contact support.'
             })
         
         if razorpay_order:

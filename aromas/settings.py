@@ -270,9 +270,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Razorpay Settings (Currently Disabled)
 RAZORPAY_ENABLED = env_bool('RAZORPAY_ENABLED', False)
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
-RAZORPAY_CURRENCY = os.environ.get('RAZORPAY_CURRENCY', 'INR')  # Currency code
+# Strip whitespace from keys to prevent common configuration errors
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '').strip()
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '').strip()
+RAZORPAY_CURRENCY = os.environ.get('RAZORPAY_CURRENCY', 'INR').strip()  # Currency code
+
+# Validate Razorpay configuration if enabled
+if RAZORPAY_ENABLED:
+    if not RAZORPAY_KEY_ID:
+        raise ValueError("RAZORPAY_ENABLED is True but RAZORPAY_KEY_ID is not set in .env file")
+    if not RAZORPAY_KEY_SECRET:
+        raise ValueError("RAZORPAY_ENABLED is True but RAZORPAY_KEY_SECRET is not set in .env file")
 
 # When RAZORPAY_ENABLED = True, customers can pay online via Razorpay
 # When RAZORPAY_ENABLED = False, only Cash on Delivery (COD) is available

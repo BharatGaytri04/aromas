@@ -342,12 +342,25 @@
 			// We'll use a hidden form submission
 			const formData = new FormData(checkoutForm);
 			
+			// Get CSRF token from form
+			const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+			if (!csrfToken) {
+				console.error('CSRF token not found in form');
+				alert('Security token missing. Please refresh the page and try again.');
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = originalText;
+				isProcessing = false;
+				return;
+			}
+			
 			fetch(checkoutForm.action, {
 				method: 'POST',
 				body: formData,
 				headers: {
-					'X-Requested-With': 'XMLHttpRequest'
+					'X-Requested-With': 'XMLHttpRequest',
+					'X-CSRFToken': csrfToken.value
 				},
+				credentials: 'same-origin', // Include cookies for CSRF
 				redirect: 'manual' // Don't follow redirects automatically
 			})
 			.then(response => {
@@ -427,12 +440,20 @@
 	function createRazorpayPayment(orderNumber) {
 		console.log('Creating Razorpay payment for order:', orderNumber);
 		
+		// Get CSRF token for the request
+		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+		const headers = {
+			'X-Requested-With': 'XMLHttpRequest'
+		};
+		if (csrfToken) {
+			headers['X-CSRFToken'] = csrfToken.value;
+		}
+		
 		// Call backend to create Razorpay order
 		fetch(`/orders/razorpay/create/${orderNumber}/`, {
 			method: 'GET',
-			headers: {
-				'X-Requested-With': 'XMLHttpRequest'
-			}
+			headers: headers,
+			credentials: 'same-origin' // Include cookies for CSRF
 		})
 		.then(response => {
 			console.log('Razorpay create response status:', response.status);

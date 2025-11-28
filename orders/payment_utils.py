@@ -26,23 +26,57 @@ def create_razorpay_order(order):
     Returns:
         dict: Razorpay order details with order_id and amount
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if not is_razorpay_enabled():
+        logger.error("Razorpay is not enabled in settings")
         return None
+    
+    # Validate API keys before proceeding
+    key_id = getattr(settings, 'RAZORPAY_KEY_ID', '').strip()
+    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '').strip()
+    
+    if not key_id:
+        logger.error("RAZORPAY_KEY_ID is not set or is empty")
+        raise ValueError("RAZORPAY_KEY_ID is not configured. Please check your .env file.")
+    
+    if not key_secret:
+        logger.error("RAZORPAY_KEY_SECRET is not set or is empty")
+        raise ValueError("RAZORPAY_KEY_SECRET is not configured. Please check your .env file.")
+    
+    # Check for extra spaces (common issue)
+    if key_id != key_id.strip() or key_secret != key_secret.strip():
+        logger.warning("Razorpay keys may have extra spaces. Trimming...")
+        key_id = key_id.strip()
+        key_secret = key_secret.strip()
     
     try:
         import razorpay
+    except ImportError:
+        logger.error("Razorpay package is not installed. Run: pip install razorpay")
+        raise ImportError("Razorpay package is not installed. Please install it: pip install razorpay")
+    
+    try:
+        # Initialize Razorpay client with validated keys
+        logger.info(f"Initializing Razorpay client with Key ID: {key_id[:10]}...")
+        razorpay_client = razorpay.Client(auth=(key_id, key_secret))
         
-        # Initialize Razorpay client
-        razorpay_client = razorpay.Client(
-            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
-        )
+        # Validate order amount
+        if not order.final_total or order.final_total <= 0:
+            logger.error(f"Invalid order amount: {order.final_total}")
+            raise ValueError(f"Invalid order amount: {order.final_total}")
         
         # Create order on Razorpay
         # Amount should be in paise (smallest currency unit)
         # For INR: 1 rupee = 100 paise
         amount_in_paise = int(order.final_total * 100)
         
-        razorpay_order = razorpay_client.order.create({
+        if amount_in_paise < 100:  # Minimum 1 rupee
+            logger.error(f"Order amount too small: {amount_in_paise} paise")
+            raise ValueError("Order amount must be at least ₹1.00")
+        
+        order_data = {
             'amount': amount_in_paise,  # Amount in paise
             'currency': getattr(settings, 'RAZORPAY_CURRENCY', 'INR'),
             'receipt': order.order_number,
@@ -51,33 +85,43 @@ def create_razorpay_order(order):
                 'customer_name': order.full_name(),
                 'customer_email': order.email,
             }
-        })
+        }
+        
+        logger.info(f"Creating Razorpay order for {amount_in_paise} paise (Order: {order.order_number})")
+        
+        # Create order with detailed error handling
+        try:
+            razorpay_order = razorpay_client.order.create(order_data)
+            logger.info(f"Razorpay order created successfully: {razorpay_order.get('id')}")
+        except razorpay.errors.BadRequestError as e:
+            logger.error(f"Razorpay BadRequestError: {str(e)}")
+            raise ValueError(f"Invalid request to Razorpay: {str(e)}")
+        except razorpay.errors.ServerError as e:
+            logger.error(f"Razorpay ServerError: {str(e)}")
+            raise ConnectionError(f"Razorpay server error. Please try again later: {str(e)}")
+        except razorpay.errors.GatewayError as e:
+            logger.error(f"Razorpay GatewayError: {str(e)}")
+            raise ConnectionError(f"Payment gateway error. Please check your internet connection: {str(e)}")
+        except Exception as e:
+            logger.error(f"Razorpay API error: {type(e).__name__}: {str(e)}")
+            raise ConnectionError(f"Failed to connect to Razorpay: {str(e)}")
         
         return {
             'order_id': razorpay_order['id'],
             'amount': amount_in_paise,
             'currency': razorpay_order['currency'],
-            'key_id': settings.RAZORPAY_KEY_ID,
+            'key_id': key_id,
         }
-    except ImportError:
-        # Razorpay package not installed
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error("Razorpay package is not installed. Run: pip install razorpay")
-        return None
     except AttributeError as e:
-        # Razorpay keys not configured
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Razorpay keys not configured in settings: {str(e)}")
-        return None
+        logger.error(f"Razorpay settings error: {str(e)}")
+        raise ValueError(f"Razorpay configuration error: {str(e)}")
+    except (ValueError, ConnectionError) as e:
+        # Re-raise validation and connection errors
+        raise
     except Exception as e:
-        # Log error in production
-        import logging
-        logger = logging.getLogger(__name__)
-        error_msg = str(e)
-        logger.error(f"Razorpay order creation error: {error_msg}")
-        return None
+        # Catch any other unexpected errors
+        logger.error(f"Unexpected Razorpay error: {type(e).__name__}: {str(e)}")
+        raise Exception(f"Failed to create payment order: {str(e)}")
 
 
 def verify_razorpay_payment(razorpay_order_id, razorpay_payment_id, razorpay_signature):
