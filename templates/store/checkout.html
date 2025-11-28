@@ -372,16 +372,6 @@
 							throw new Error(errorMsg);
 						}
 					});
-				}
-				
-				// Check if response is successful (but not JSON)
-				if (!response.ok && response.status !== 302) {
-					// Try to get error message from response
-					return response.text().then(text => {
-						console.error('Error response:', text);
-						throw new Error('Server error: ' + response.status + '. Please check the form and try again.');
-					});
-				}
 				} else if (response.status >= 300 && response.status < 400) {
 					// Handle redirect manually
 					const redirectUrl = response.headers.get('Location') || response.url;
