@@ -351,10 +351,23 @@
 				redirect: 'manual' // Don't follow redirects automatically
 			})
 			.then(response => {
+				console.log('Response status:', response.status);
+				console.log('Response headers:', response.headers.get('content-type'));
+				
+				// Check if response is successful
+				if (!response.ok && response.status !== 302) {
+					// Try to get error message from response
+					return response.text().then(text => {
+						console.error('Error response:', text);
+						throw new Error('Server error: ' + response.status + '. Please check the form and try again.');
+					});
+				}
+				
 				// Check if response is JSON
 				const contentType = response.headers.get('content-type');
 				if (contentType && contentType.includes('application/json')) {
 					return response.json().then(data => {
+						console.log('JSON response:', data);
 						if (data.success && data.order_number) {
 							createRazorpayPayment(data.order_number);
 						} else {
@@ -364,30 +377,48 @@
 				} else if (response.status >= 300 && response.status < 400) {
 					// Handle redirect manually
 					const redirectUrl = response.headers.get('Location') || response.url;
+					console.log('Redirect URL:', redirectUrl);
 					const orderMatch = redirectUrl.match(/order-success\/([^\/]+)\//);
 					
 					if (orderMatch) {
 						const orderNumber = orderMatch[1];
+						console.log('Extracted order number:', orderNumber);
 						createRazorpayPayment(orderNumber);
 					} else {
-						throw new Error('Could not extract order number from response');
+						// Try to get order number from response body
+						return response.text().then(text => {
+							const orderMatch2 = text.match(/order-success\/([^\/]+)\//);
+							if (orderMatch2) {
+								createRazorpayPayment(orderMatch2[1]);
+							} else {
+								throw new Error('Could not extract order number. Please try again.');
+							}
+						});
 					}
 				} else {
 					// Try to parse as JSON anyway
 					return response.json().then(data => {
-						if (data.order_number) {
+						console.log('Parsed JSON:', data);
+						if (data.order_number || (data.success && data.order_number)) {
 							createRazorpayPayment(data.order_number);
 						} else {
 							throw new Error(data.message || 'Failed to create order');
 						}
-					}).catch(() => {
-						throw new Error('Unexpected response from server');
+					}).catch(parseError => {
+						console.error('JSON parse error:', parseError);
+						// Try to get text response
+						return response.text().then(text => {
+							console.error('Response text:', text.substring(0, 500));
+							throw new Error('Unexpected response from server. Please refresh and try again.');
+						});
 					});
 				}
 			})
 			.catch(error => {
-				console.error('Error:', error);
-				alert('An error occurred. Please check your internet connection and try again.');
+				console.error('Full error:', error);
+				console.error('Error message:', error.message);
+				console.error('Error stack:', error.stack);
+				alert('Error: ' + (error.message || 'An error occurred. Please check your internet connection and try again.'));
 				submitBtn.disabled = false;
 				submitBtn.innerHTML = originalText;
 				isProcessing = false;
@@ -396,6 +427,8 @@
 	});
 	
 	function createRazorpayPayment(orderNumber) {
+		console.log('Creating Razorpay payment for order:', orderNumber);
+		
 		// Call backend to create Razorpay order
 		fetch(`/orders/razorpay/create/${orderNumber}/`, {
 			method: 'GET',
@@ -403,8 +436,17 @@
 				'X-Requested-With': 'XMLHttpRequest'
 			}
 		})
-		.then(response => response.json())
+		.then(response => {
+			console.log('Razorpay create response status:', response.status);
+			if (!response.ok) {
+				return response.json().then(data => {
+					throw new Error(data.message || 'Failed to create payment order');
+				});
+			}
+			return response.json();
+		})
 		.then(data => {
+			console.log('Razorpay order data:', data);
 			if (data.success) {
 				// Open Razorpay checkout
 				const options = {
@@ -415,6 +457,7 @@
 					description: 'Order Payment',
 					order_id: data.order_id,
 					handler: function(response) {
+						console.log('Payment successful:', response);
 						// Payment successful, verify payment
 						verifyRazorpayPayment(response, orderNumber);
 					},
@@ -430,6 +473,7 @@
 					// All payment methods (UPI, Cards, Net Banking, Wallets) are available
 					modal: {
 						ondismiss: function() {
+							console.log('Payment modal dismissed');
 							// User closed the payment modal
 							const submitBtn = checkoutForm.querySelector('button[type="submit"]');
 							submitBtn.disabled = false;
@@ -439,7 +483,16 @@
 					}
 				};
 				
+				console.log('Opening Razorpay checkout with options:', options);
 				const razorpay = new Razorpay(options);
+				razorpay.on('payment.failed', function(response) {
+					console.error('Payment failed:', response.error);
+					alert('Payment failed: ' + (response.error.description || 'Unknown error'));
+					const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+					submitBtn.disabled = false;
+					submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}';
+					isProcessing = false;
+				});
 				razorpay.open();
 			} else {
 				throw new Error(data.message || 'Failed to create payment');
@@ -447,9 +500,12 @@
 		})
 		.catch(error => {
 			console.error('Razorpay payment creation error:', error);
-			let errorMessage = 'Failed to initialize payment. Please check your internet connection and try again.';
+			console.error('Error stack:', error.stack);
+			let errorMessage = 'Failed to initialize payment. ';
 			if (error.message) {
-				console.error('Error details:', error.message);
+				errorMessage += error.message;
+			} else {
+				errorMessage += 'Please check your internet connection and try again.';
 			}
 			alert(errorMessage);
 			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
