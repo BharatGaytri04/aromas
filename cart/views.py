@@ -286,12 +286,14 @@ def checkout(request):
             # STEP 6: A Payment Record is Created
             # ============================================================
             # Create payment record (even for COD)
+            # For Razorpay, status will be 'Pending' until payment is verified
+            payment_status = 'Pending' if payment_method in ['COD', 'RAZORPAY'] else 'Completed'
             payment = Payment.objects.create(
                 user=request.user,
                 payment_id=str(uuid.uuid4()),
                 payment_method=payment_method,
                 amount_paid=str(final_total),
-                status='Pending' if payment_method == 'COD' else 'Completed'
+                status=payment_status
             )
             
             # ============================================================
@@ -427,6 +429,7 @@ def checkout(request):
             # STEP 9: Cart Is Fully Cleared
             # ============================================================
             # Clear cart - delete all cart items and the cart
+            # (Items are already in order, so cart can be cleared)
             cart_items.delete()
             try:
                 cart.delete()
@@ -434,7 +437,23 @@ def checkout(request):
                 pass
             
             # ============================================================
-            # STEP 10: Order is Finalized
+            # STEP 9.5: Handle Payment Method
+            # ============================================================
+            # For Razorpay, we need to return order_number to JavaScript
+            # The order will be finalized after payment verification
+            if payment_method == 'RAZORPAY' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # Return JSON response for Razorpay payment flow
+                # Note: Order is created but not finalized (is_ordered=False)
+                # It will be finalized in razorpay_payment_callback
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'success': True,
+                    'order_number': order_number,
+                    'message': 'Order created. Please complete payment.'
+                })
+            
+            # ============================================================
+            # STEP 10: Order is Finalized (for COD only)
             # ============================================================
             # Mark order as officially placed
             order.is_ordered = True

@@ -196,8 +196,13 @@ def razorpay_payment_callback(request):
             
             # Verify payment signature
             if verify_razorpay_payment(razorpay_order_id, razorpay_payment_id, razorpay_signature):
-                # Update payment status
+                # Update payment status (this also sets is_ordered=True)
                 update_payment_status(order, razorpay_payment_id, status='Completed')
+                
+                # Finalize order (cart is already cleared in checkout)
+                order.is_ordered = True
+                order.status = 'New'
+                order.save()
                 
                 # Create order tracking entry
                 OrderTracking.objects.create(
@@ -210,6 +215,13 @@ def razorpay_payment_callback(request):
                 try:
                     from notifications.utils import notify_new_order
                     notify_new_order(order)
+                except:
+                    pass
+                
+                # Send invoice email
+                try:
+                    from orders.utils import send_invoice_email
+                    send_invoice_email(order)
                 except:
                     pass
                 

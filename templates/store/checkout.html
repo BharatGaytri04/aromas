@@ -274,6 +274,11 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{% if razorpay_enabled %}
+<!-- Razorpay Checkout Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endif %}
+
 <script>
 (function() {
 	const addressChoices = document.querySelectorAll('.address-choice');
@@ -294,6 +299,169 @@
 
 	toggleAddressFields();
 })();
+
+{% if razorpay_enabled %}
+// Razorpay Payment Handler
+(function() {
+	const checkoutForm = document.getElementById('checkoutForm');
+	const razorpayRadio = document.getElementById('razorpay');
+	const codRadio = document.getElementById('cod');
+	
+	if (!checkoutForm || !razorpayRadio) return;
+	
+	let isProcessing = false;
+	
+	checkoutForm.addEventListener('submit', function(e) {
+		const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+		
+		// If Razorpay is selected, handle payment flow
+		if (selectedPayment && selectedPayment.value === 'RAZORPAY' && !isProcessing) {
+			e.preventDefault();
+			isProcessing = true;
+			
+			// Disable submit button
+			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+			const originalText = submitBtn.innerHTML;
+			submitBtn.disabled = true;
+			submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+			
+			// First, submit the form normally to create the order
+			// We'll use a hidden form submission
+			const formData = new FormData(checkoutForm);
+			
+			fetch(checkoutForm.action, {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			})
+			.then(response => {
+				if (response.redirected) {
+					// If redirected, it means order was created successfully
+					// Extract order number from redirect URL
+					const redirectUrl = response.url;
+					const orderMatch = redirectUrl.match(/order-success\/([^\/]+)\//);
+					
+					if (orderMatch) {
+						const orderNumber = orderMatch[1];
+						// Create Razorpay payment
+						createRazorpayPayment(orderNumber);
+					} else {
+						// If no order number found, follow redirect (might be error)
+						window.location.href = redirectUrl;
+					}
+				} else {
+					return response.json().then(data => {
+						if (data.order_number) {
+							createRazorpayPayment(data.order_number);
+						} else {
+							throw new Error(data.message || 'Failed to create order');
+						}
+					});
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				alert('An error occurred. Please try again or use Cash on Delivery.');
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = originalText;
+				isProcessing = false;
+			});
+		}
+	});
+	
+	function createRazorpayPayment(orderNumber) {
+		// Call backend to create Razorpay order
+		fetch(`/orders/razorpay/create/${orderNumber}/`, {
+			method: 'GET',
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				// Open Razorpay checkout
+				const options = {
+					key: data.key_id,
+					amount: data.amount,
+					currency: data.currency,
+					name: 'Aromas by HarNoor',
+					description: 'Order Payment',
+					order_id: data.order_id,
+					handler: function(response) {
+						// Payment successful, verify payment
+						verifyRazorpayPayment(response, orderNumber);
+					},
+					prefill: {
+						name: '{{ request.user.get_full_name|default:request.user.email }}',
+						email: '{{ request.user.email }}',
+						contact: '{{ request.user.phone_number|default:"" }}'
+					},
+					theme: {
+						color: '#007bff'
+					},
+					modal: {
+						ondismiss: function() {
+							// User closed the payment modal
+							const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+							submitBtn.disabled = false;
+							submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}';
+							isProcessing = false;
+						}
+					}
+				};
+				
+				const razorpay = new Razorpay(options);
+				razorpay.open();
+			} else {
+				throw new Error(data.message || 'Failed to create payment');
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			alert('Failed to initialize payment. Please try again or use Cash on Delivery.');
+			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+			submitBtn.disabled = false;
+			submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}';
+			isProcessing = false;
+		});
+	}
+	
+	function verifyRazorpayPayment(paymentResponse, orderNumber) {
+		// Verify payment with backend
+		const formData = new FormData();
+		formData.append('razorpay_order_id', paymentResponse.razorpay_order_id);
+		formData.append('razorpay_payment_id', paymentResponse.razorpay_payment_id);
+		formData.append('razorpay_signature', paymentResponse.razorpay_signature);
+		formData.append('order_number', orderNumber);
+		
+		fetch('/orders/razorpay/callback/', {
+			method: 'POST',
+			body: formData,
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				// Payment verified, redirect to success page
+				window.location.href = data.redirect_url || `/orders/order-success/${orderNumber}/`;
+			} else {
+				alert('Payment verification failed: ' + (data.message || 'Unknown error'));
+				window.location.href = '/cart/';
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			alert('An error occurred while verifying payment. Please contact support.');
+			window.location.href = '/cart/';
+		});
+	}
+})();
+{% endif %}
 </script>
 {% endblock %}
 

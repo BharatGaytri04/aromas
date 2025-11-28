@@ -11,7 +11,7 @@ xhtml2pdf==0.2.17
 reportlab==4.4.5
 
 # Payment Gateway (Optional - install when enabling Razorpay)
-# razorpay==1.4.2  # Uncomment when you add Razorpay keys
+razorpay==1.4.2
 
 
 # Environment configuration
