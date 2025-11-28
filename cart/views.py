@@ -15,7 +15,11 @@ import datetime
 def _cart_id(request):
     cart = request.session.session_key
     if not cart:
-        cart = request.session.create()
+        request.session.create()
+        cart = request.session.session_key
+    # Ensure session is saved
+    if not request.session.exists(request.session.session_key):
+        request.session.save()
     return cart
 
 def add_cart(request, product_id):
