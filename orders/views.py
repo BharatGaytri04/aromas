@@ -138,7 +138,17 @@ def create_razorpay_payment(request, order_number):
         order = Order.objects.get(order_number=order_number, user=request.user)
         
         # Create Razorpay order
-        razorpay_order = create_razorpay_order(order)
+        try:
+            razorpay_order = create_razorpay_order(order)
+        except Exception as e:
+            # Log the actual error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Razorpay order creation failed: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Payment initialization failed: {str(e)}. Please try again or use Cash on Delivery.'
+            })
         
         if razorpay_order:
             return JsonResponse({
@@ -151,7 +161,7 @@ def create_razorpay_payment(request, order_number):
         else:
             return JsonResponse({
                 'success': False,
-                'message': 'Failed to create payment order. Please try again or use COD.'
+                'message': 'Failed to create payment order. Please check Razorpay configuration or use Cash on Delivery.'
             })
     except Order.DoesNotExist:
         return JsonResponse({
@@ -159,6 +169,9 @@ def create_razorpay_payment(request, order_number):
             'message': 'Order not found.'
         })
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unexpected error in create_razorpay_payment: {str(e)}")
         return JsonResponse({
             'success': False,
             'message': f'Error: {str(e)}'

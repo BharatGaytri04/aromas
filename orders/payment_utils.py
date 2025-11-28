@@ -61,10 +61,22 @@ def create_razorpay_order(order):
         }
     except ImportError:
         # Razorpay package not installed
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error("Razorpay package is not installed. Run: pip install razorpay")
+        return None
+    except AttributeError as e:
+        # Razorpay keys not configured
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Razorpay keys not configured in settings: {str(e)}")
         return None
     except Exception as e:
         # Log error in production
-        print(f"Razorpay order creation error: {str(e)}")
+        import logging
+        logger = logging.getLogger(__name__)
+        error_msg = str(e)
+        logger.error(f"Razorpay order creation error: {error_msg}")
         return None
 
 

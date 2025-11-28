@@ -334,30 +334,41 @@
 				body: formData,
 				headers: {
 					'X-Requested-With': 'XMLHttpRequest'
-				}
+				},
+				redirect: 'manual' // Don't follow redirects automatically
 			})
 			.then(response => {
-				if (response.redirected) {
-					// If redirected, it means order was created successfully
-					// Extract order number from redirect URL
-					const redirectUrl = response.url;
+				// Check if response is JSON
+				const contentType = response.headers.get('content-type');
+				if (contentType && contentType.includes('application/json')) {
+					return response.json().then(data => {
+						if (data.success && data.order_number) {
+							createRazorpayPayment(data.order_number);
+						} else {
+							throw new Error(data.message || 'Failed to create order');
+						}
+					});
+				} else if (response.status >= 300 && response.status < 400) {
+					// Handle redirect manually
+					const redirectUrl = response.headers.get('Location') || response.url;
 					const orderMatch = redirectUrl.match(/order-success\/([^\/]+)\//);
 					
 					if (orderMatch) {
 						const orderNumber = orderMatch[1];
-						// Create Razorpay payment
 						createRazorpayPayment(orderNumber);
 					} else {
-						// If no order number found, follow redirect (might be error)
-						window.location.href = redirectUrl;
+						throw new Error('Could not extract order number from response');
 					}
 				} else {
+					// Try to parse as JSON anyway
 					return response.json().then(data => {
 						if (data.order_number) {
 							createRazorpayPayment(data.order_number);
 						} else {
 							throw new Error(data.message || 'Failed to create order');
 						}
+					}).catch(() => {
+						throw new Error('Unexpected response from server');
 					});
 				}
 			})
@@ -420,8 +431,12 @@
 			}
 		})
 		.catch(error => {
-			console.error('Error:', error);
-			alert('Failed to initialize payment. Please try again or use Cash on Delivery.');
+			console.error('Razorpay payment creation error:', error);
+			let errorMessage = 'Failed to initialize payment. Please try again or use Cash on Delivery.';
+			if (error.message) {
+				console.error('Error details:', error.message);
+			}
+			alert(errorMessage);
 			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
 			submitBtn.disabled = false;
 			submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}';
