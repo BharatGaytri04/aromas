@@ -377,7 +377,7 @@
 			})
 			.catch(error => {
 				console.error('Error:', error);
-				alert('An error occurred. Please try again or use Cash on Delivery.');
+				alert('An error occurred. Please check your internet connection and try again.');
 				submitBtn.disabled = false;
 				submitBtn.innerHTML = originalText;
 				isProcessing = false;
@@ -437,9 +437,10 @@
 		})
 		.catch(error => {
 			console.error('Razorpay payment creation error:', error);
-			let errorMessage = 'Failed to initialize payment. Please try again or use Cash on Delivery.';
+			let errorMessage = 'Failed to initialize payment. Please check your internet connection and try again.';
 			if (error.message) {
 				console.error('Error details:', error.message);
+				errorMessage = 'Payment error: ' + error.message + '. Please try again.';
 			}
 			alert(errorMessage);
 			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
