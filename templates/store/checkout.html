@@ -244,8 +244,13 @@
 							<div class="form-check mb-2">
 								<input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="RAZORPAY">
 								<label class="form-check-label" for="razorpay">
-									<i class="fas fa-credit-card me-2"></i>Pay Online (Razorpay)
-									<small class="text-muted d-block ms-4 mt-1">Credit/Debit Card, UPI, Net Banking</small>
+									<i class="fas fa-mobile-alt me-2"></i>Pay Online (UPI, Cards, Net Banking)
+									<small class="text-muted d-block ms-4 mt-1">
+										<i class="fab fa-google-pay me-1"></i>Google Pay, 
+										<i class="fab fa-amazon-pay me-1"></i>PhonePe, 
+										<i class="fas fa-credit-card me-1"></i>Cards, 
+										<i class="fas fa-university me-1"></i>Net Banking
+									</small>
 								</label>
 							</div>
 							{% endif %}
@@ -413,6 +418,8 @@
 					theme: {
 						color: '#007bff'
 					},
+					// UPI is enabled by default in Razorpay
+					// All payment methods (UPI, Cards, Net Banking, Wallets) are available
 					modal: {
 						ondismiss: function() {
 							// User closed the payment modal
