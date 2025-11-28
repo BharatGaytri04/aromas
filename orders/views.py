@@ -131,7 +131,7 @@ def create_razorpay_payment(request, order_number):
     if not is_razorpay_enabled():
         return JsonResponse({
             'success': False,
-            'message': 'Razorpay is not enabled. Please use Cash on Delivery.'
+            'message': 'Online payment is currently unavailable. Please contact support.'
         })
     
     try:
@@ -147,7 +147,7 @@ def create_razorpay_payment(request, order_number):
             logger.error(f"Razorpay order creation failed: {str(e)}")
             return JsonResponse({
                 'success': False,
-                'message': f'Payment initialization failed: {str(e)}. Please try again or use Cash on Delivery.'
+                'message': f'Payment initialization failed: {str(e)}. Please try again.'
             })
         
         if razorpay_order:
@@ -161,7 +161,7 @@ def create_razorpay_payment(request, order_number):
         else:
             return JsonResponse({
                 'success': False,
-                'message': 'Failed to create payment order. Please check Razorpay configuration or use Cash on Delivery.'
+                'message': 'Failed to create payment order. Please check your internet connection and try again.'
             })
     except Order.DoesNotExist:
         return JsonResponse({
