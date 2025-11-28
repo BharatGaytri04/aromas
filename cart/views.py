@@ -264,8 +264,14 @@ def checkout(request):
             # ============================================================
             # STEP 3: System Calculates Prices
             # ============================================================
-            # Get payment method
-            payment_method = request.POST.get('payment_method', 'COD')
+            # Get payment method (default to RAZORPAY if not specified)
+            payment_method = request.POST.get('payment_method', 'RAZORPAY')
+            
+            # If Razorpay is not enabled, show error
+            from orders.payment_utils import is_razorpay_enabled
+            if not is_razorpay_enabled() and payment_method == 'RAZORPAY':
+                messages.error(request, 'Online payment is currently unavailable. Please contact support.')
+                return redirect('cart')
             
             # Get coupon discount
             discount = 0
@@ -285,9 +291,9 @@ def checkout(request):
             # ============================================================
             # STEP 6: A Payment Record is Created
             # ============================================================
-            # Create payment record (even for COD)
+            # Create payment record
             # For Razorpay, status will be 'Pending' until payment is verified
-            payment_status = 'Pending' if payment_method in ['COD', 'RAZORPAY'] else 'Completed'
+            payment_status = 'Pending' if payment_method == 'RAZORPAY' else 'Completed'
             payment = Payment.objects.create(
                 user=request.user,
                 payment_id=str(uuid.uuid4()),
@@ -453,40 +459,44 @@ def checkout(request):
                 })
             
             # ============================================================
-            # STEP 10: Order is Finalized (for COD only)
+            # STEP 10: Order Finalization (Only for non-Razorpay methods)
             # ============================================================
-            # Mark order as officially placed
-            order.is_ordered = True
-            order.status = 'New'
-            order.save()
+            # For Razorpay, order is finalized after payment verification
+            # This section is only reached if payment_method is not RAZORPAY
+            # Since we only support Razorpay now, this shouldn't be reached
+            # But keeping it for safety
+            if payment_method != 'RAZORPAY':
+                # Mark order as officially placed
+                order.is_ordered = True
+                order.status = 'New'
+                order.save()
+                
+                # Create order tracking entry
+                from orders.models import OrderTracking
+                OrderTracking.objects.create(
+                    order=order,
+                    status='New',
+                    description='Order placed successfully'
+                )
+                
+                # Send notifications
+                from notifications.utils import notify_new_order
+                notify_new_order(order)
+                
+                # Send invoice email
+                try:
+                    from orders.utils import send_invoice_email
+                    send_invoice_email(order)
+                except:
+                    pass
+                
+                messages.success(request, f'Order placed successfully! Your order number is {order_number}')
+                return redirect('orders:order_success', order_number=order_number)
             
-            # Create order tracking entry
-            from orders.models import OrderTracking
-            OrderTracking.objects.create(
-                order=order,
-                status='New',
-                description='Order placed successfully'
-            )
-            
-            # ============================================================
-            # STEP 12: Seller/Admin Gets Notified
-            # ============================================================
-            # Send notifications to admin and customer
-            from notifications.utils import notify_new_order
-            notify_new_order(order)
-            
-            # Send invoice email
-            try:
-                from orders.utils import send_invoice_email
-                send_invoice_email(order)
-            except:
-                pass  # Don't fail order if email fails
-            
-            # ============================================================
-            # STEP 11: Confirmation Page Shows Order Number
-            # ============================================================
-            messages.success(request, f'Order placed successfully! Your order number is {order_number}')
-            return redirect('orders:order_success', order_number=order_number)
+            # If we reach here and payment_method is RAZORPAY but not AJAX request,
+            # something went wrong - redirect to cart
+            messages.error(request, 'Payment initialization failed. Please try again.')
+            return redirect('cart')
         else:
             messages.error(request, 'Please correct the errors in the form.')
     else:
