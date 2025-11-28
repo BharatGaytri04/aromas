@@ -505,9 +505,28 @@ def checkout(request):
             
             # If we reach here and payment_method is RAZORPAY but not AJAX request,
             # something went wrong - redirect to cart
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Payment initialization failed. Please try again.'
+                }, status=400)
             messages.error(request, 'Payment initialization failed. Please try again.')
             return redirect('cart')
         else:
+            # Form validation failed
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                from django.forms.utils import ErrorDict
+                # Get form errors
+                errors = {}
+                for field, error_list in form.errors.items():
+                    errors[field] = error_list
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please correct the errors in the form.',
+                    'errors': errors
+                }, status=400)
             messages.error(request, 'Please correct the errors in the form.')
     else:
         # Pre-fill form with user data if available

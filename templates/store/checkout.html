@@ -354,16 +354,7 @@
 				console.log('Response status:', response.status);
 				console.log('Response headers:', response.headers.get('content-type'));
 				
-				// Check if response is successful
-				if (!response.ok && response.status !== 302) {
-					// Try to get error message from response
-					return response.text().then(text => {
-						console.error('Error response:', text);
-						throw new Error('Server error: ' + response.status + '. Please check the form and try again.');
-					});
-				}
-				
-				// Check if response is JSON
+				// Check if response is JSON (even for errors)
 				const contentType = response.headers.get('content-type');
 				if (contentType && contentType.includes('application/json')) {
 					return response.json().then(data => {
@@ -371,9 +362,26 @@
 						if (data.success && data.order_number) {
 							createRazorpayPayment(data.order_number);
 						} else {
-							throw new Error(data.message || 'Failed to create order');
+							// Handle error response
+							let errorMsg = data.message || 'Failed to create order';
+							if (data.errors) {
+								// Form validation errors
+								const errorFields = Object.keys(data.errors);
+								errorMsg += '\n\nPlease check: ' + errorFields.join(', ');
+							}
+							throw new Error(errorMsg);
 						}
 					});
+				}
+				
+				// Check if response is successful (but not JSON)
+				if (!response.ok && response.status !== 302) {
+					// Try to get error message from response
+					return response.text().then(text => {
+						console.error('Error response:', text);
+						throw new Error('Server error: ' + response.status + '. Please check the form and try again.');
+					});
+				}
 				} else if (response.status >= 300 && response.status < 400) {
 					// Handle redirect manually
 					const redirectUrl = response.headers.get('Location') || response.url;
