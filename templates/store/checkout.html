@@ -235,8 +235,8 @@
 							<h6 class="mb-3 text-primary"><i class="fas fa-credit-card me-2"></i>Payment Method</h6>
 							{% if razorpay_enabled %}
 							<div class="form-check mb-2">
-								<input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="RAZORPAY" checked>
-								<label class="form-check-label" for="razorpay">
+								<input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="RAZORPAY" checked style="display: none;">
+								<label class="form-check-label" for="razorpay" style="cursor: default;">
 									<i class="fas fa-mobile-alt me-2"></i>Pay Online (UPI, Cards, Net Banking)
 									<small class="text-muted d-block ms-4 mt-1">
 										<i class="fab fa-google-pay me-1"></i>Google Pay, 
@@ -247,9 +247,9 @@
 								</label>
 							</div>
 							{% else %}
-							<div class="alert alert-warning">
+							<div class="alert alert-danger">
 								<i class="fas fa-exclamation-triangle me-2"></i>
-								Online payment is currently unavailable. Please contact support.
+								<strong>Online payment is currently unavailable.</strong> Please contact support at aromasbyharnoor@gmail.com
 							</div>
 							{% endif %}
 						</div>
@@ -308,17 +308,25 @@
 (function() {
 	const checkoutForm = document.getElementById('checkoutForm');
 	const razorpayRadio = document.getElementById('razorpay');
-	const codRadio = document.getElementById('cod');
 	
-	if (!checkoutForm || !razorpayRadio) return;
+	if (!checkoutForm || !razorpayRadio) {
+		console.error('Checkout form or Razorpay option not found');
+		return;
+	}
 	
 	let isProcessing = false;
 	
 	checkoutForm.addEventListener('submit', function(e) {
+		// Always use Razorpay (COD is removed)
 		const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
 		
-		// Always use Razorpay (COD is removed)
-		if (selectedPayment && selectedPayment.value === 'RAZORPAY' && !isProcessing) {
+		// Ensure Razorpay is selected
+		if (!selectedPayment || selectedPayment.value !== 'RAZORPAY') {
+			razorpayRadio.checked = true;
+		}
+		
+		// Handle Razorpay payment flow
+		if (!isProcessing) {
 			e.preventDefault();
 			isProcessing = true;
 			
@@ -377,7 +385,7 @@
 			})
 			.catch(error => {
 				console.error('Error:', error);
-				alert('An error occurred. Please check your internet connection and try again.');
+				alert('An error occurred. Please try again or use Cash on Delivery.');
 				submitBtn.disabled = false;
 				submitBtn.innerHTML = originalText;
 				isProcessing = false;
@@ -393,21 +401,9 @@
 				'X-Requested-With': 'XMLHttpRequest'
 			}
 		})
-		.then(response => {
-			// Check if response is OK
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			return response.json();
-		})
+		.then(response => response.json())
 		.then(data => {
-			console.log('Razorpay order creation response:', data);
 			if (data.success) {
-				// Check if Razorpay SDK is loaded
-				if (typeof Razorpay === 'undefined') {
-					throw new Error('Razorpay SDK not loaded. Please refresh the page.');
-				}
-				
 				// Open Razorpay checkout
 				const options = {
 					key: data.key_id,
@@ -441,16 +437,7 @@
 					}
 				};
 				
-				console.log('Opening Razorpay checkout with options:', options);
 				const razorpay = new Razorpay(options);
-				razorpay.on('payment.failed', function(response) {
-					console.error('Payment failed:', response.error);
-					alert('Payment failed: ' + (response.error.description || 'Unknown error'));
-					const submitBtn = checkoutForm.querySelector('button[type="submit"]');
-					submitBtn.disabled = false;
-					submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}';
-					isProcessing = false;
-				});
 				razorpay.open();
 			} else {
 				throw new Error(data.message || 'Failed to create payment');
@@ -458,13 +445,10 @@
 		})
 		.catch(error => {
 			console.error('Razorpay payment creation error:', error);
-			console.error('Error stack:', error.stack);
-			let errorMessage = 'Failed to initialize payment. ';
+			let errorMessage = 'Failed to initialize payment. Please try again or use Cash on Delivery.';
 			if (error.message) {
 				console.error('Error details:', error.message);
-				errorMessage += 'Error: ' + error.message + '. ';
 			}
-			errorMessage += 'Please check browser console for details and try again.';
 			alert(errorMessage);
 			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
 			submitBtn.disabled = false;
