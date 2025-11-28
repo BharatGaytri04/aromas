@@ -302,8 +302,10 @@
 
 	toggleAddressFields();
 })();
+{% endif %}
 
 {% if razorpay_enabled %}
+<script>
 // Razorpay Payment Handler
 (function() {
 	const checkoutForm = document.getElementById('checkoutForm');
@@ -489,7 +491,7 @@
 		});
 	}
 })();
-{% endif %}
 </script>
+{% endif %}
 {% endblock %}
 
