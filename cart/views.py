@@ -209,8 +209,14 @@ def checkout(request):
         next_url = request.path
         return redirect(f"{login_url}?next={next_url}")
     
+    # Ensure session is saved before getting cart (prevents cart loss on reload)
+    if not request.session.session_key:
+        request.session.create()
+    request.session.save()
+    
     try:
-        cart = Cart.objects.get(cart_id=_cart_id(request))
+        cart_id = _cart_id(request)
+        cart = Cart.objects.get(cart_id=cart_id)
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
         
         if not cart_items.exists():
