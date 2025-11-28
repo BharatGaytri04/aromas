@@ -393,9 +393,21 @@
 				'X-Requested-With': 'XMLHttpRequest'
 			}
 		})
-		.then(response => response.json())
+		.then(response => {
+			// Check if response is OK
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			return response.json();
+		})
 		.then(data => {
+			console.log('Razorpay order creation response:', data);
 			if (data.success) {
+				// Check if Razorpay SDK is loaded
+				if (typeof Razorpay === 'undefined') {
+					throw new Error('Razorpay SDK not loaded. Please refresh the page.');
+				}
+				
 				// Open Razorpay checkout
 				const options = {
 					key: data.key_id,
@@ -429,7 +441,16 @@
 					}
 				};
 				
+				console.log('Opening Razorpay checkout with options:', options);
 				const razorpay = new Razorpay(options);
+				razorpay.on('payment.failed', function(response) {
+					console.error('Payment failed:', response.error);
+					alert('Payment failed: ' + (response.error.description || 'Unknown error'));
+					const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+					submitBtn.disabled = false;
+					submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Place Order - ₹{{ grand_total|floatformat:2 }}';
+					isProcessing = false;
+				});
 				razorpay.open();
 			} else {
 				throw new Error(data.message || 'Failed to create payment');
@@ -437,11 +458,13 @@
 		})
 		.catch(error => {
 			console.error('Razorpay payment creation error:', error);
-			let errorMessage = 'Failed to initialize payment. Please check your internet connection and try again.';
+			console.error('Error stack:', error.stack);
+			let errorMessage = 'Failed to initialize payment. ';
 			if (error.message) {
 				console.error('Error details:', error.message);
-				errorMessage = 'Payment error: ' + error.message + '. Please try again.';
+				errorMessage += 'Error: ' + error.message + '. ';
 			}
+			errorMessage += 'Please check browser console for details and try again.';
 			alert(errorMessage);
 			const submitBtn = checkoutForm.querySelector('button[type="submit"]');
 			submitBtn.disabled = false;
