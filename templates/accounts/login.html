@@ -4,6 +4,63 @@
 {% block content %}
 <section class="section-content padding-y">
   <div class="container" style="max-width: 500px;">
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == 'success' and 'verification email' in message|lower %}
+          <div class="email-verification-card card shadow-lg mb-4" style="border: 2px solid #28a745; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);">
+            <div class="card-body text-center py-4">
+              <div class="mb-3">
+                <i class="fas fa-envelope fa-3x text-success"></i>
+              </div>
+              <h4 class="card-title text-success mb-3" style="font-weight: 600;">📧 Check Your Email!</h4>
+              <div class="alert alert-success mb-0" style="background: white; border: none; text-align: left;">
+                <div style="font-size: 15px; line-height: 1.8;">
+                  <strong class="d-block mb-2">✓ Registration Successful!</strong>
+                  <div>{{ message }}</div>
+                  <div class="mt-3 p-3" style="background: #f8f9fa; border-radius: 6px; border-left: 3px solid #28a745;">
+                    <small class="text-muted d-block mb-1"><strong>Next Steps:</strong></small>
+                    <small class="d-block">1. Check your email inbox (and spam folder)</small>
+                    <small class="d-block">2. Click the verification link in the email</small>
+                    <small class="d-block">3. Come back here to log in</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    
+    <style>
+      /* Mobile-specific styling for email verification message */
+      @media (max-width: 768px) {
+        .email-verification-card {
+          margin: 15px 10px !important;
+          border-width: 3px !important;
+          animation: pulse 2s ease-in-out infinite;
+        }
+        .email-verification-card h4 {
+          font-size: 20px !important;
+        }
+        .email-verification-card .fa-envelope {
+          font-size: 48px !important;
+        }
+        .email-verification-card .alert {
+          font-size: 14px !important;
+          padding: 15px !important;
+        }
+      }
+      
+      @keyframes pulse {
+        0%, 100% {
+          box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+        }
+      }
+    </style>
+    
     <div class="card shadow-sm">
       <div class="card-body">
         <h3 class="card-title mb-4 text-center">Sign In</h3>

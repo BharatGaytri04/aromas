@@ -1,26 +1,76 @@
 {% if messages %}
 <div class="container my-3">
   {% for message in messages %}
-    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
-      <div class="d-flex align-items-center">
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert" style="
+      {% if message.tags == 'success' %}
+        border-left: 4px solid #28a745;
+        font-size: 16px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+      {% endif %}
+    ">
+      <div class="d-flex align-items-start">
         {% if message.tags == 'success' %}
-          <span class="mr-2 text-success"><i class="fas fa-check-circle"></i></span>
+          <span class="mr-3 text-success" style="font-size: 24px; flex-shrink: 0; margin-top: 2px;">
+            <i class="fas fa-check-circle"></i>
+          </span>
         {% elif message.tags == 'error' or message.tags == 'danger' %}
-          <span class="mr-2 text-danger"><i class="fas fa-exclamation-circle"></i></span>
+          <span class="mr-3 text-danger" style="font-size: 24px; flex-shrink: 0; margin-top: 2px;">
+            <i class="fas fa-exclamation-circle"></i>
+          </span>
         {% elif message.tags == 'warning' %}
-          <span class="mr-2 text-warning"><i class="fas fa-exclamation-triangle"></i></span>
+          <span class="mr-3 text-warning" style="font-size: 24px; flex-shrink: 0; margin-top: 2px;">
+            <i class="fas fa-exclamation-triangle"></i>
+          </span>
         {% else %}
-          <span class="mr-2 text-info"><i class="fas fa-info-circle"></i></span>
+          <span class="mr-3 text-info" style="font-size: 24px; flex-shrink: 0; margin-top: 2px;">
+            <i class="fas fa-info-circle"></i>
+          </span>
         {% endif %}
-        <div>
-          {{ message }}
+        <div style="flex: 1; line-height: 1.6;">
+          <strong style="display: block; margin-bottom: 8px; font-size: 18px;">
+            {% if message.tags == 'success' %}
+              ✓ Registration Successful!
+            {% elif message.tags == 'error' or message.tags == 'danger' %}
+              ⚠ Error
+            {% elif message.tags == 'warning' %}
+              ⚠ Warning
+            {% else %}
+              ℹ Information
+            {% endif %}
+          </strong>
+          <div style="font-size: 15px;">
+            {{ message }}
+          </div>
         </div>
       </div>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="font-size: 24px; padding: 8px;">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
   {% endfor %}
 </div>
+
+<style>
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    .alert {
+      margin: 10px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+    .alert-success {
+      background-color: #d4edda !important;
+      color: #155724 !important;
+      border-left: 5px solid #28a745 !important;
+    }
+    .alert strong {
+      font-size: 16px !important;
+    }
+    .alert div[style*="font-size: 15px"] {
+      font-size: 14px !important;
+    }
+  }
+</style>
 {% endif %}
 
