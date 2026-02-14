@@ -28,10 +28,12 @@ from accounts.views import honeypot_admin_login
 
 urlpatterns = [
     path('admin/', honeypot_admin_login, name='admin_honeypot'),
+    # Admin utility URLs - must be before admin.site.urls
     path(f'{settings.ADMIN_URL}download-database/', download_database, name='admin_download_database'),
     path(f'{settings.ADMIN_URL}view-users/', view_all_users, name='admin_view_users'),
     path(f'{settings.ADMIN_URL}export-users-excel/', export_users_excel, name='admin_export_users_excel'),
     path(f'{settings.ADMIN_URL}export-users-csv/', export_users_csv, name='admin_export_users_csv'),
+    # Django admin URLs
     path(settings.ADMIN_URL, admin.site.urls),
     path('', views.home, name='home'),
     path('store/', include('store.urls')),
