@@ -23,11 +23,15 @@ from django.conf.urls.static import static
 
 from . import views
 from .admin_utils import download_database
+from accounts.admin_views import view_all_users, export_users_excel, export_users_csv
 from accounts.views import honeypot_admin_login
 
 urlpatterns = [
     path('admin/', honeypot_admin_login, name='admin_honeypot'),
     path(f'{settings.ADMIN_URL}download-database/', download_database, name='admin_download_database'),
+    path(f'{settings.ADMIN_URL}view-users/', view_all_users, name='admin_view_users'),
+    path(f'{settings.ADMIN_URL}export-users-excel/', export_users_excel, name='admin_export_users_excel'),
+    path(f'{settings.ADMIN_URL}export-users-csv/', export_users_csv, name='admin_export_users_csv'),
     path(settings.ADMIN_URL, admin.site.urls),
     path('', views.home, name='home'),
     path('store/', include('store.urls')),

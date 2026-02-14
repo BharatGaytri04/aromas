@@ -2,22 +2,50 @@
 {% load static %}
 
 {% block content %}
-<div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #417690; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <h2 style="margin-top: 0; color: #417690; font-size: 20px;">
-        <i class="fas fa-database"></i> Database Management
-    </h2>
-    <p style="margin-bottom: 15px; color: #666; font-size: 14px;">
-        Download a complete backup of your database. This includes all data at the time of download.
-    </p>
-    <a href="{% url 'admin_download_database' %}" 
-       class="button" 
-       style="background-color: #417690; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 14px;"
-       onclick="return confirm('This will download the complete database backup file. Continue?');">
-        <i class="fas fa-download"></i> Download Database Backup
-    </a>
-    <p style="margin-top: 10px; font-size: 12px; color: #999;">
-        <strong>Note:</strong> For SQLite, downloads .sqlite3 file. For PostgreSQL, downloads .dump file.
-    </p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+    <!-- Database Management -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #417690; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0; color: #417690; font-size: 18px;">
+            <i class="fas fa-database"></i> Database Management
+        </h2>
+        <p style="margin-bottom: 15px; color: #666; font-size: 13px;">
+            Download a complete backup of your database.
+        </p>
+        <a href="{% url 'admin_download_database' %}" 
+           class="button" 
+           style="background-color: #417690; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 13px;"
+           onclick="return confirm('This will download the complete database backup file. Continue?');">
+            <i class="fas fa-download"></i> Download Database
+        </a>
+        <p style="margin-top: 10px; font-size: 11px; color: #999;">
+            SQLite: .sqlite3 | PostgreSQL: .dump
+        </p>
+    </div>
+    
+    <!-- User Management -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0; color: #28a745; font-size: 18px;">
+            <i class="fas fa-users"></i> User Management
+        </h2>
+        <p style="margin-bottom: 15px; color: #666; font-size: 13px;">
+            View and export all registered users to Excel/CSV.
+        </p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{% url 'admin_view_users' %}" 
+               class="button" 
+               style="background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 13px;">
+                <i class="fas fa-eye"></i> View All Users
+            </a>
+            <a href="{% url 'admin_export_users_excel' %}" 
+               class="button" 
+               style="background-color: #17a2b8; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 13px;">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+        </div>
+        <p style="margin-top: 10px; font-size: 11px; color: #999;">
+            Includes: Email, Name, Address, Login Stats
+        </p>
+    </div>
 </div>
 {{ block.super }}
 {% endblock %}

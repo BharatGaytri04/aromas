@@ -1,0 +1,127 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}All Users | Aromas by HarNoor Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">Aromas by HarNoor - Admin</a>
+</h1>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+<div style="margin-bottom: 20px;">
+    <h1 style="margin-bottom: 10px;">All Users</h1>
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div>
+                <strong>Total Users:</strong> <span style="color: #417690; font-size: 18px;">{{ total_users }}</span>
+            </div>
+            <div>
+                <strong>Active Users:</strong> <span style="color: #28a745; font-size: 18px;">{{ active_users }}</span>
+            </div>
+            <div>
+                <strong>Inactive Users:</strong> <span style="color: #dc3545; font-size: 18px;">{{ inactive_users }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'admin_export_users_excel' %}" 
+           class="button" 
+           style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; display: inline-block;">
+            <i class="fas fa-file-excel"></i> Download Excel (.xlsx)
+        </a>
+        <a href="{% url 'admin_export_users_csv' %}" 
+           class="button" 
+           style="background-color: #17a2b8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+            <i class="fas fa-file-csv"></i> Download CSV (.csv)
+        </a>
+        <a href="{% url 'admin:index' %}" 
+           class="button" 
+           style="background-color: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-left: 10px; display: inline-block;">
+            <i class="fas fa-arrow-left"></i> Back to Admin
+        </a>
+    </div>
+</div>
+
+<div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <thead>
+            <tr style="background: #417690; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">ID</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Email</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Username</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Name</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Phone</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">City</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Date Joined</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Last Login</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Status</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Login Stats</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_info in users %}
+            {% with user=user_info.user %}
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.id }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.email }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.username }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.get_full_name }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.phone_number|default:"-" }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.city|default:"-" }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ user.date_joined|date:"Y-m-d H:i" }}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">
+                    {% if user.last_login %}
+                        {{ user.last_login|date:"Y-m-d H:i" }}
+                    {% else %}
+                        <span style="color: #999;">Never</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 10px; border: 1px solid #ddd;">
+                    {% if user.is_active %}
+                        <span style="color: #28a745; font-weight: bold;">✓ Active</span>
+                    {% else %}
+                        <span style="color: #dc3545; font-weight: bold;">✗ Inactive</span>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        <br><small style="color: #6c757d;">Staff</small>
+                    {% endif %}
+                    {% if user.is_superadmin %}
+                        <br><small style="color: #dc3545;">Super Admin</small>
+                    {% endif %}
+                </td>
+                <td style="padding: 10px; border: 1px solid #ddd;">
+                    <small>
+                        Total: <strong>{{ user_info.login_attempts }}</strong><br>
+                        Successful: <strong style="color: #28a745;">{{ user_info.successful_logins }}</strong>
+                        {% if user_info.last_login_attempt %}
+                            <br><span style="color: #666; font-size: 11px;">Last: {{ user_info.last_login_attempt|date:"Y-m-d H:i" }}</span>
+                        {% endif %}
+                    </small>
+                </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr>
+                <td colspan="10" style="padding: 20px; text-align: center; color: #999;">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        table {
+            font-size: 12px;
+        }
+        th, td {
+            padding: 8px 4px !important;
+        }
+    }
+</style>
+</div>
+{% endblock %}
