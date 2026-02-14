@@ -22,10 +22,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from . import views
+from .admin_utils import download_database
 from accounts.views import honeypot_admin_login
 
 urlpatterns = [
     path('admin/', honeypot_admin_login, name='admin_honeypot'),
+    path(f'{settings.ADMIN_URL}download-database/', download_database, name='admin_download_database'),
     path(settings.ADMIN_URL, admin.site.urls),
     path('', views.home, name='home'),
     path('store/', include('store.urls')),

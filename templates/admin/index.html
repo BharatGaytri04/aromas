@@ -1,0 +1,23 @@
+{% extends "admin/index.html" %}
+{% load static %}
+
+{% block content %}
+<div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #417690;">
+    <h2 style="margin-top: 0; color: #417690;">
+        <i class="fas fa-database"></i> Database Management
+    </h2>
+    <p style="margin-bottom: 15px; color: #666;">
+        Download a complete backup of your database. This includes all data at the time of download.
+    </p>
+    <a href="{% url 'admin_download_database' %}" 
+       class="button" 
+       style="background-color: #417690; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;"
+       onclick="return confirm('This will download the complete database backup file. Continue?');">
+        <i class="fas fa-download"></i> Download Database Backup
+    </a>
+    <p style="margin-top: 10px; font-size: 12px; color: #999;">
+        <strong>Note:</strong> For SQLite, downloads .sqlite3 file. For PostgreSQL, downloads .dump file.
+    </p>
+</div>
+{{ block.super }}
+{% endblock %}
